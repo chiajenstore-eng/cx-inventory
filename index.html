@@ -14,7 +14,6 @@
         .submit-btn { background: linear-gradient(135deg, #bfa07a 0%, #a68a64 100%); box-shadow: 0 10px 20px rgba(191, 160, 122, 0.3); }
         .stepper-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #fff; color: #bfa07a; border: 1px solid #eee; border-radius: 10px; }
         .unit-tag { font-size: 10px; color: #bfa07a; border: 1px solid #bfa07a; padding: 0 4px; border-radius: 4px; margin-left: 6px; }
-        /* iOS風格Select美化 */
         select { -webkit-appearance: none; appearance: none; background: #f9f9f9; border: none; padding: 12px; border-radius: 15px; font-weight: bold; color: #333; width: 100%; text-align: center; }
     </style>
 </head>
@@ -59,7 +58,7 @@
                 <h2 class="text-xl font-black text-slate-800">📝 新增預定單</h2>
                 <button onclick="closeOrderModal()" class="text-slate-400 text-3xl">&times;</button>
             </div>
-            <div class="overflow-y-auto space-y-4 pb-6">
+            <div class="overflow-y-auto space-y-4 pb-10">
                 <div class="bg-gray-50 p-4 rounded-3xl space-y-3">
                     <label class="text-[10px] font-black text-slate-400 uppercase ml-1">取餐日期與時間 (24H制)</label>
                     <div class="grid grid-cols-3 gap-2">
@@ -73,25 +72,26 @@
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
-                    <input type="text" id="o-name" placeholder="客人姓名" class="bg-gray-50 p-4 rounded-2xl text-sm outline-none font-bold">
-                    <input type="text" id="o-phone" placeholder="手機末三碼" class="bg-gray-50 p-4 rounded-2xl text-sm outline-none font-bold">
+                    <input type="text" id="o-name" placeholder="客人姓名" class="bg-gray-50 p-4 rounded-2xl text-sm outline-none font-bold text-slate-700">
+                    <input type="text" id="o-phone" placeholder="手機末三碼" class="bg-gray-50 p-4 rounded-2xl text-sm outline-none font-bold text-slate-700">
                 </div>
 
                 <div class="space-y-2">
-                    <select id="o-loc-select" onchange="toggleOtherLoc()" class="font-bold">
+                    <select id="o-loc-select" onchange="toggleOtherLoc()" class="font-bold text-slate-700">
                         <option value="嘉北街">📍 嘉北街</option>
                         <option value="吉品紅豆餅">📍 吉品紅豆餅</option>
                         <option value="溪口北極殿">📍 溪口北極殿</option>
                         <option value="中正大學">📍 中正大學</option>
                         <option value="其他">📍 其他 (手動輸入)</option>
                     </select>
-                    <input type="text" id="o-loc-other" placeholder="輸入其他取餐地點" class="hidden w-full bg-amber-50 p-4 rounded-2xl text-sm outline-none border border-amber-100 font-bold">
+                    <input type="text" id="o-loc-other" placeholder="輸入其他取餐地點" class="hidden w-full bg-amber-50 p-4 rounded-2xl text-sm outline-none border border-amber-100 font-bold text-amber-700">
                 </div>
                 
                 <h3 class="font-bold text-slate-700 pt-2 border-t border-gray-100">預定品項</h3>
-                <div id="order-item-picker" class="space-y-1 bg-gray-50 rounded-2xl p-2"></div>
+                <div id="order-item-picker" class="space-y-2">
+                    </div>
                 
-                <textarea id="o-note" placeholder="備註..." class="w-full bg-gray-50 p-4 rounded-2xl text-sm outline-none h-20 font-bold"></textarea>
+                <textarea id="o-note" placeholder="備註..." class="w-full bg-gray-50 p-4 rounded-2xl text-sm outline-none h-20 font-bold text-slate-700"></textarea>
                 <button onclick="saveNewOrder()" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-bold text-lg shadow-xl">確認加入訂單</button>
             </div>
         </div>
@@ -155,7 +155,8 @@
 
         let state = {
             mode: 'inventory',
-            inventory: {}, factory: {}, orders: [],
+            inventory: {}, factory: {}, orders: [], 
+            orderDraft: {}, // 用於暫存彈窗內的點選數量
             revenue: { cash: 0, lp: 0, costRaw: 0, fuel: 0, rent: 0, elec: 0, etc: 0, other: 0 }
         };
 
@@ -193,10 +194,10 @@
                             <div class="font-bold text-slate-700 underline decoration-[#bfa07a]/30">${p.name}<span class="unit-tag">${p.unit}</span></div>
                             <p class="text-[10px] text-slate-300 mt-1">${state.mode==='inventory'?'$'+p.price:'工廠叫貨'}</p>
                         </div>
-                        <div class="flex items-center bg-gray-50 rounded-xl p-1">
-                            <button onclick="changeQty(${i},-1)" class="stepper-btn active:bg-gray-100"><i class="fas fa-minus"></i></button>
+                        <div class="flex items-center bg-gray-50 rounded-xl p-1 border border-gray-100">
+                            <button onclick="changeQty(${i},-1)" class="stepper-btn active:bg-gray-100 shadow-sm"><i class="fas fa-minus"></i></button>
                             <div class="w-12 text-center font-black text-slate-700">${data[i] || 0}</div>
-                            <button onclick="changeQty(${i},1)" class="stepper-btn active:bg-gray-100"><i class="fas fa-plus"></i></button>
+                            <button onclick="changeQty(${i},1)" class="stepper-btn active:bg-gray-100 shadow-sm"><i class="fas fa-plus"></i></button>
                         </div>
                     </div>`;
             });
@@ -208,8 +209,8 @@
                     <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
                         <h3 class="text-xs font-black text-[#bfa07a] uppercase mb-4">營業收入</h3>
                         <div class="grid grid-cols-2 gap-4">
-                            <input type="number" id="rev-cash" oninput="saveRev()" placeholder="現金" value="${state.revenue.cash||''}" class="bg-gray-50 p-4 rounded-2xl font-bold outline-none">
-                            <input type="number" id="rev-lp" oninput="saveRev()" placeholder="LINE PAY" value="${state.revenue.lp||''}" class="bg-gray-50 p-4 rounded-2xl font-bold outline-none">
+                            <input type="number" id="rev-cash" oninput="saveRev()" placeholder="現金" value="${state.revenue.cash||''}" class="bg-gray-50 p-4 rounded-2xl font-bold outline-none text-slate-700">
+                            <input type="number" id="rev-lp" oninput="saveRev()" placeholder="LINE PAY" value="${state.revenue.lp||''}" class="bg-gray-50 p-4 rounded-2xl font-bold outline-none text-slate-700">
                         </div>
                     </div>
                     <div class="bg-amber-50/30 p-6 rounded-3xl border border-amber-100">
@@ -219,9 +220,9 @@
                     <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
                         <h3 class="text-xs font-black text-red-400 uppercase mb-4">支出項目</h3>
                         <div class="grid grid-cols-2 gap-3">
-                            <input type="number" id="exp-fuel" oninput="saveRev()" placeholder="加油" value="${state.revenue.fuel||''}" class="bg-gray-50 p-3 rounded-xl outline-none"><input type="number" id="exp-rent" oninput="saveRev()" placeholder="餐車租金" value="${state.revenue.rent||''}" class="bg-gray-50 p-3 rounded-xl outline-none">
-                            <input type="number" id="exp-elec" oninput="saveRev()" placeholder="電費" value="${state.revenue.elec||''}" class="bg-gray-50 p-3 rounded-xl outline-none"><input type="number" id="exp-etc" oninput="saveRev()" placeholder="ETC" value="${state.revenue.etc||''}" class="bg-gray-50 p-3 rounded-xl outline-none">
-                            <input type="number" id="exp-other" oninput="saveRev()" placeholder="其他" value="${state.revenue.other||''}" class="bg-gray-50 p-3 rounded-xl outline-none col-span-2">
+                            <input type="number" id="exp-fuel" oninput="saveRev()" placeholder="加油" value="${state.revenue.fuel||''}" class="bg-gray-50 p-3 rounded-xl outline-none text-slate-700"><input type="number" id="exp-rent" oninput="saveRev()" placeholder="餐車租金" value="${state.revenue.rent||''}" class="bg-gray-50 p-3 rounded-xl outline-none text-slate-700">
+                            <input type="number" id="exp-elec" oninput="saveRev()" placeholder="電費" value="${state.revenue.elec||''}" class="bg-gray-50 p-3 rounded-xl outline-none text-slate-700"><input type="number" id="exp-etc" oninput="saveRev()" placeholder="ETC" value="${state.revenue.etc||''}" class="bg-gray-50 p-3 rounded-xl outline-none text-slate-700">
+                            <input type="number" id="exp-other" oninput="saveRev()" placeholder="其他" value="${state.revenue.other||''}" class="bg-gray-50 p-3 rounded-xl outline-none col-span-2 text-slate-700">
                         </div>
                     </div>
                 </div>`;
@@ -249,6 +250,17 @@
             document.getElementById('o-loc-other').classList.toggle('hidden', val !== '其他');
         }
 
+        function changeQty(i, d) {
+            const data = state.mode === 'inventory' ? state.inventory : state.factory;
+            data[i] = Math.max(0, (data[i] || 0) + d);
+            render();
+        }
+
+        function changeOrderDraftQty(i, d) {
+            state.orderDraft[i] = Math.max(0, (state.orderDraft[i] || 0) + d);
+            document.getElementById(`draft-qty-${i}`).innerText = state.orderDraft[i];
+        }
+
         function updateStat() {
             const val = document.getElementById('stat-value'), lab = document.getElementById('stat-label');
             if (state.mode === 'inventory') {
@@ -269,15 +281,20 @@
         }
 
         function openOrderModal() {
+            state.orderDraft = {}; // 重置暫存數量
             document.getElementById('order-modal').classList.remove('hidden');
             const p = document.getElementById('order-item-picker');
+            
             p.innerHTML = products.map((prod, i) => `
-                <div class="flex justify-between items-center p-3 bg-white mb-1 rounded-xl">
+                <div class="product-card p-3 flex items-center justify-between shadow-none border border-gray-50 mb-2">
                     <span class="text-xs font-bold text-slate-600">${prod.name}</span>
-                    <input type="number" id="pick-${i}" placeholder="0" class="w-12 text-center border-b border-amber-200 outline-none font-bold bg-transparent text-sm">
+                    <div class="flex items-center bg-gray-50 rounded-xl p-1">
+                        <button onclick="changeOrderDraftQty(${i},-1)" class="w-8 h-8 flex items-center justify-center bg-white rounded-lg shadow-sm text-[#bfa07a]"><i class="fas fa-minus text-xs"></i></button>
+                        <div id="draft-qty-${i}" class="w-10 text-center font-black text-slate-700">0</div>
+                        <button onclick="changeOrderDraftQty(${i},1)" class="w-8 h-8 flex items-center justify-center bg-white rounded-lg shadow-sm text-[#bfa07a]"><i class="fas fa-plus text-xs"></i></button>
+                    </div>
                 </div>`).join('');
             
-            // 初始化iOS Style日期時間
             const now = new Date();
             const months = Array.from({length:12}, (_,i)=>i+1);
             const days = Array.from({length:31}, (_,i)=>i+1);
@@ -293,7 +310,7 @@
         function saveNewOrder() {
             const its = []; let t = 0;
             products.forEach((p, i) => {
-                const q = Number(document.getElementById(`pick-${i}`).value) || 0;
+                const q = state.orderDraft[i] || 0;
                 if (q > 0) { its.push({ name: p.name, qty: q }); t += p.price * q; }
             });
             const selLoc = document.getElementById('o-loc-select').value;
@@ -311,6 +328,7 @@
 
         function closeOrderModal() { document.getElementById('order-modal').classList.add('hidden'); }
         function handleMainAction() { alert('數據儲存成功！'); }
+        
         function saveRev() {
             if(state.mode !== 'revenue') return;
             state.revenue = {
@@ -321,11 +339,7 @@
             };
             updateStat();
         }
-        function changeQty(i, d) {
-            const data = state.mode === 'inventory' ? state.inventory : state.factory;
-            data[i] = Math.max(0, (data[i] || 0) + d);
-            render();
-        }
+
         switchMode('inventory');
     </script>
 </body>
