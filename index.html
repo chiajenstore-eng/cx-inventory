@@ -12,16 +12,15 @@
         .product-card { background: #fff; border-radius: 20px; border: 1px solid #f1f1f1; transition: all 0.2s; }
         .active-tab { color: #bfa07a !important; border-bottom: 3px solid #bfa07a; }
         .submit-btn { background: linear-gradient(135deg, #bfa07a 0%, #a68a64 100%); box-shadow: 0 10px 20px rgba(191, 160, 122, 0.3); }
-        .reset-btn { background: #fff; border: 1.5px solid #eee; color: #94a3b8; }
         .stepper-btn { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; background: #fff; color: #bfa07a; border: 1px solid #eee; border-radius: 10px; }
         select { -webkit-appearance: none; appearance: none; background: #f9f9f9; border: none; padding: 10px; border-radius: 15px; font-weight: bold; color: #333; width: 100%; text-align: center; text-align-last: center; border: 1px solid #eee; }
         .loading-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center; color:white; font-weight:bold; flex-direction: column; gap: 15px; }
-        .order-swipe-container { position: relative; overflow: hidden; border-radius: 30px; user-select: none; }
+        .order-swipe-container { position: relative; overflow: hidden; border-radius: 30px; user-select: none; margin-bottom: 12px; }
         .order-item-content { position: relative; z-index: 2; transition: transform 0.2s ease-out; background: white; }
-        .swipe-bg { position: absolute; inset: 0; background: #06C755; display: flex; align-items: center; padding-left: 25px; color: white; font-weight: 900; font-size: 14px; z-index: 1; border-radius: 30px; opacity: 0; transition: opacity 0.2s; }
+        .swipe-bg { position: absolute; inset: 0; background: #06C755; display: flex; align-items: center; padding-left: 25px; color: white; font-weight: 900; font-size: 14px; z-index: 1; border-radius: 30px; opacity: 0; }
     </style>
 </head>
-<body class="pb-44">
+<body class="pb-36">
     <div id="loading" class="loading-overlay">
         <div class="animate-spin text-4xl"><i class="fas fa-sync-alt"></i></div>
         <span>雲端同步中...</span>
@@ -30,23 +29,25 @@
     <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 px-6 py-5 flex justify-between items-center shadow-sm">
         <div>
             <div class="flex items-center gap-2">
-                <h1 class="text-2xl font-black text-slate-800 italic uppercase">【 埕心 Select 】</h1>
-                <span id="session-tag" class="text-[9px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold hidden">結算模式</span>
+                <h1 class="text-2xl font-black text-slate-800 italic tracking-tighter uppercase">【 埕心 Select 】</h1>
+                <span id="session-tag" class="text-[9px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold hidden">結算中</span>
             </div>
-            <p id="current-mode-title" class="text-[10px] text-slate-400 font-bold uppercase mt-1">管理系統</p>
+            <p id="current-mode-title" class="text-[10px] text-slate-400 font-bold mt-1 tracking-widest uppercase">管理系統</p>
         </div>
         <div class="text-right flex flex-col items-end">
-            <div id="factory-config-btn" class="hidden mb-1"><button onclick="openBaseOrderModal()" class="text-[10px] bg-slate-800 text-white px-3 py-1.5 rounded-xl font-bold">基本量設定</button></div>
             <span id="stat-value" class="text-xl font-black text-red-500">$0</span>
-            <span id="stat-label" class="block text-[9px] text-slate-400 font-bold uppercase tracking-widest italic">庫存金額</span>
+            <span id="stat-label" class="block text-[9px] text-slate-400 font-bold uppercase italic mb-1">系統數值</span>
+            <button id="mini-reset-btn" onclick="confirmReset()" class="hidden text-[10px] bg-slate-100 text-slate-400 px-2 py-1 rounded-lg font-bold border border-slate-200 active:bg-slate-200 transition-all">
+                <i class="fas fa-redo-alt mr-1"></i>重新統計
+            </button>
+            <div id="factory-config-btn" class="hidden"><button onclick="openBaseOrderModal()" class="text-[10px] bg-slate-800 text-white px-2 py-1 rounded-lg font-bold">基本量設定</button></div>
         </div>
     </header>
 
     <div id="app" class="p-4"></div>
 
-    <div id="action-bar" class="hidden fixed bottom-24 left-0 right-0 px-6 z-40 space-y-2">
+    <div id="action-bar" class="hidden fixed bottom-24 left-0 right-0 px-6 z-40">
         <button id="action-bar-btn" class="submit-btn w-full py-4 rounded-2xl text-white font-bold text-lg flex items-center justify-center gap-3 active:scale-95 transition-transform"></button>
-        <button onclick="confirmReset()" class="reset-btn w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 active:scale-95"><i class="fas fa-redo-alt"></i> 重新統計 (清除當前數值)</button>
     </div>
 
     <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex h-20 items-center justify-around shadow-2xl z-50 text-slate-300">
@@ -57,13 +58,13 @@
         <div onclick="switchMode('analysis')" id="nav-analysis" class="flex flex-col items-center font-bold transition-all"><i class="fas fa-chart-line text-lg mb-1"></i><span class="text-[9px]">營業分析</span></div>
     </nav>
 
-    <div id="export-modal" class="hidden fixed inset-0 z-[300] bg-black/80 flex items-center justify-center p-6"><div class="bg-white w-full max-w-sm rounded-[30px] p-6 shadow-2xl relative flex flex-col"><button onclick="document.getElementById('export-modal').classList.add('hidden')" class="absolute top-4 right-6 text-slate-300 text-3xl font-bold">&times;</button><h2 class="text-lg font-black text-slate-800 mb-4 text-center italic">📤 系統彙整報表</h2><textarea id="export-text" class="w-full h-56 bg-gray-50 p-4 rounded-2xl text-[11px] font-bold text-slate-600 outline-none border border-gray-100 mb-4 leading-relaxed" readonly></textarea><a id="line-share-btn" href="#" target="_blank" class="w-full bg-[#06C755] text-white py-4 rounded-2xl font-black text-lg flex items-center justify-center gap-2 shadow-lg"><i class="fab fa-line text-2xl"></i> 傳送至 LINE</a></div></div>
+    <div id="export-modal" class="hidden fixed inset-0 z-[300] bg-black/80 backdrop-blur-md flex items-center justify-center p-6"><div class="bg-white w-full max-w-sm rounded-[30px] p-6 shadow-2xl relative flex flex-col"><button onclick="document.getElementById('export-modal').classList.add('hidden')" class="absolute top-4 right-6 text-slate-300 text-3xl font-bold">&times;</button><h2 class="text-lg font-black text-slate-800 mb-4 text-center italic">📤 系統彙整報表</h2><textarea id="export-text" class="w-full h-56 bg-gray-50 p-4 rounded-2xl text-[11px] font-bold text-slate-600 outline-none border border-gray-100 mb-4 leading-relaxed" readonly></textarea><a id="line-share-btn" href="#" target="_blank" class="w-full bg-[#06C755] text-white py-4 rounded-2xl font-black text-lg flex items-center justify-center gap-2 shadow-lg"><i class="fab fa-line text-2xl"></i> 傳送至 LINE</a></div></div>
     <div id="session-modal" class="hidden fixed inset-0 z-[250] bg-black/80 flex items-center justify-center p-6"><div class="bg-white w-full max-w-sm rounded-[40px] p-8 shadow-2xl relative text-center"><button onclick="closeSessionModal()" class="absolute top-6 right-8 text-slate-300 text-2xl font-bold">&times;</button><h2 class="text-xl font-black text-slate-800 mb-6 italic">今日結算對位</h2><div class="space-y-4"><div class="grid grid-cols-2 gap-2"><select id="s-date-m"></select><select id="s-date-d"></select></div><select id="s-loc" class="font-bold text-slate-700 text-center"><option value="嘉北街">📍 嘉北街</option><option value="吉品紅豆餅">📍 吉品紅豆餅</option><option value="溪口北極殿">📍 溪口北極殿</option><option value="中正大學">📍 中正大學</option><option value="其他">📍 其他</option></select><button onclick="confirmSession()" class="w-full bg-[#bfa07a] text-white py-4 rounded-2xl font-bold text-lg mt-4 shadow-lg">進入系統</button></div></div></div>
     <div id="order-modal" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end"><div class="bg-white w-full rounded-t-[40px] p-6 max-h-[95vh] overflow-hidden flex flex-col shadow-2xl"><div class="flex justify-between items-center mb-4"><h2 id="order-modal-title" class="text-xl font-black text-slate-800 italic">📝 預定單</h2><button onclick="closeOrderModal()" class="text-slate-400 text-3xl">&times;</button></div><div class="overflow-y-auto space-y-4 pb-12"><div class="bg-gray-50 p-4 rounded-3xl space-y-3"><div class="grid grid-cols-3 gap-2"><select id="o-date-m"></select><select id="o-date-d"></select><div class="flex gap-1"><select id="o-time-h"></select><select id="o-time-m"></select></div></div></div><div class="grid grid-cols-2 gap-3"><input type="text" id="o-name" placeholder="姓名" class="bg-gray-50 p-4 rounded-2xl font-bold text-center"><input type="number" inputmode="numeric" id="o-phone" placeholder="末三碼" class="bg-gray-50 p-4 rounded-2xl font-bold text-center"></div><select id="o-loc-select" onchange="toggleOtherLoc()" class="font-bold text-slate-700 text-center"><option value="嘉北街">📍 嘉北街</option><option value="吉品紅豆餅">📍 吉品紅豆餅</option><option value="溪口北極殿">📍 溪口北極殿</option><option value="中正大學">📍 中正大學</option><option value="其他">📍 其他</option></select><input type="text" id="o-loc-other" placeholder="手動地點" class="hidden w-full bg-amber-50 p-4 rounded-2xl font-bold border border-amber-100 text-center"><div id="order-item-picker" class="space-y-4"></div><textarea id="o-note" placeholder="備註..." class="w-full bg-gray-50 p-4 rounded-2xl font-bold h-20"></textarea><div class="space-y-3"><button onclick="saveNewOrder()" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-bold text-lg shadow-xl">確認儲存</button><button id="delete-order-btn" onclick="deleteCurrentOrder()" class="hidden w-full bg-red-50 text-red-500 py-3 rounded-2xl font-bold text-sm">刪除此筆訂單</button></div></div></div></div>
-    <div id="base-order-modal" class="hidden fixed inset-0 z-[200] bg-black/80 backdrop-blur-md flex items-end"><div class="bg-white w-full rounded-t-[40px] p-6 max-h-[95vh] overflow-hidden flex flex-col shadow-2xl"><div class="flex justify-between items-center mb-4"><h2 class="text-xl font-black text-slate-800 italic">⚙️ 基本量設定</h2><div class="text-right"><span id="base-total" class="text-lg font-black text-amber-600">$0</span><p class="text-[9px] text-slate-400 uppercase">預計總價值</p></div></div><select id="base-day-select" onchange="renderBaseItemPicker()" class="mb-4 bg-amber-50 text-amber-700 text-center"><option value="1">週一</option><option value="2">週二 (出車)</option><option value="3">週三</option><option value="4">週四 (出車)</option><option value="5">週五</option><option value="6">週六</option><option value="0">週日 (出車)</option></select><div id="base-item-picker" class="overflow-y-auto space-y-4 pb-20"></div><div class="absolute bottom-6 left-6 right-6"><button onclick="closeBaseOrderModal()" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-bold shadow-xl">儲存設定</button></div></div></div>
+    <div id="base-order-modal" class="hidden fixed inset-0 z-[200] bg-black/80 backdrop-blur-md flex items-end"><div class="bg-white w-full rounded-t-[40px] p-6 max-h-[95vh] overflow-hidden flex flex-col shadow-2xl"><div class="flex justify-between items-center mb-4"><h2 class="text-xl font-black text-slate-800 italic">⚙️ 基本量設定</h2><div class="text-right"><span id="base-total" class="text-lg font-black text-amber-600">$0</span><p class="text-[9px] text-slate-400 uppercase tracking-widest">預計總價值</p></div></div><select id="base-day-select" onchange="renderBaseItemPicker()" class="mb-4 bg-amber-50 text-amber-700 text-center"><option value="1">週一</option><option value="2">週二 (出車)</option><option value="3">週三</option><option value="4">週四 (出車)</option><option value="5">週五</option><option value="6">週六</option><option value="0">週日 (出車)</option></select><div id="base-item-picker" class="overflow-y-auto space-y-4 pb-20"></div><div class="absolute bottom-6 left-6 right-6"><button onclick="closeBaseOrderModal()" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-bold shadow-xl">儲存設定</button></div></div></div>
 
     <script>
-        const GOOGLE_SCRIPT_URL = '貼上你的網址'; 
+        const GOOGLE_SCRIPT_URL = '貼上你的網址'; // 💡 請貼上你的 GAS 網址
 
         const products = [
             { cat: "🥖 麵包區", name: "黃金牛角", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "原味小菠蘿", price: 35, unit: "2入" }, { cat: "🥖 麵包區", name: "奶酥菠蘿", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "芋頭菠蘿", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "菠蘿金牛角", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "楓糖小可頌", price: 35, unit: "3入" }, { cat: "🥖 麵包區", name: "鹽花可頌", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "蘋果派", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "巧克力大理石", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "可可麵包捲", price: 35, unit: "2入" }, { cat: "🥖 麵包區", name: "奶香小餐包", price: 35, unit: "2入" }, { cat: "🥖 麵包區", name: "黃金小羅宋", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "北海道鮮奶", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "奶酥小炸彈", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "牛奶克林姆", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "咖啡麵包", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "紅豆麵包", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "肉鬆麵包", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "台式肉鬆蔥捲", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "明太子法國麵包", price: 45, unit: "個" }, { cat: "🥖 麵包區", name: "香蒜法國麵包", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "香蒜金磚吐司", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "德腸夏威夷", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "可可爆漿菠蘿", price: 45, unit: "個" }, { cat: "🥖 麵包區", name: "巧克力QQ球", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "蔓越莓雜糧", price: 45, unit: "個" }, { cat: "🥖 麵包區", name: "優格蔓越莓", price: 55, unit: "個" }, { cat: "🥖 麵包區", name: "肉桂核桃捲", price: 55, unit: "個" }, { cat: "🥖 麵包區", name: "千層牛奶棒", price: 45, unit: "2入" }, { cat: "🥖 麵包區", name: "蜂蜜起酥蛋糕", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "QQ布丁麵包", price: 55, unit: "個" },
@@ -84,6 +85,16 @@
         }
         function persist() { localStorage.setItem('cx_inventory_data', JSON.stringify(state)); }
 
+        function confirmReset() {
+            if(!confirm("確定要重新統計嗎？這將清除當前分頁已輸入的數據並重新選日期。")) return;
+            if(state.mode === 'inventory') state.inventory = {};
+            if(state.mode === 'revenue') state.revenue = { cash: 0, lp: 0, costRaw: 0, fuel: 0, rent: 0, elec: 0, etc: 0, other: 0 };
+            if(state.mode === 'factory') state.factory = {};
+            state.session.active = false;
+            document.getElementById('session-tag').classList.add('hidden');
+            switchMode(state.mode);
+        }
+
         async function syncToCloud(sheetName, dataObj) {
             if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes('貼上')) return;
             document.getElementById('loading').style.display = 'flex';
@@ -94,28 +105,24 @@
             document.getElementById('loading').style.display = 'none';
         }
 
-        function confirmReset() {
-            if(!confirm("確定要清空當前分頁的所有統計數據並重新選日期嗎？")) return;
-            if(state.mode === 'inventory') state.inventory = {};
-            if(state.mode === 'revenue') state.revenue = { cash: 0, lp: 0, costRaw: 0, fuel: 0, rent: 0, elec: 0, etc: 0, other: 0 };
-            if(state.mode === 'factory') state.factory = {};
-            state.session.active = false;
-            document.getElementById('session-tag').classList.add('hidden');
-            switchMode(state.mode);
-        }
-
         function switchMode(m) {
             if ((m === 'inventory' || m === 'revenue' || m === 'factory') && !state.session.active) { state.tempMode = m; openSessionModal(); return; }
             state.mode = m;
             ['inventory', 'revenue', 'orders', 'factory', 'analysis'].forEach(t => { if(document.getElementById('nav-'+t)) document.getElementById('nav-'+t).classList.toggle('active-tab', t===m); });
             document.getElementById('current-mode-title').innerText = {inventory:'收攤點貨結算', revenue:'營收利潤結算', orders:'預定單管理', factory:'工廠叫貨規劃', analysis:'營業數據分析'}[m];
+            
             const bar = document.getElementById('action-bar'), btn = document.getElementById('action-bar-btn');
-            if (m === 'orders' || m === 'analysis') bar.classList.add('hidden');
-            else {
+            const resetBtn = document.getElementById('mini-reset-btn');
+
+            if (m === 'orders' || m === 'analysis') {
+                bar.classList.add('hidden');
+                resetBtn.classList.add('hidden');
+            } else {
                 bar.classList.remove('hidden');
+                resetBtn.classList.remove('hidden');
                 if (m === 'factory') { btn.innerHTML = '<i class="fas fa-paper-plane"></i> 確認下單並輸出'; btn.onclick = exportFactory; }
                 else if (m === 'inventory') { btn.innerHTML = '<i class="fas fa-box-open"></i> 確認收攤並輸出'; btn.onclick = exportInventory; }
-                else if (m === 'revenue') { btn.innerHTML = '<i class="fas fa-coins"></i> 確認營收並輸出'; btn.onclick = exportRevenue; }
+                else if (m === 'revenue') { btn.innerHTML = '<i class="fas fa-coins"></i> 確認營算並輸出'; btn.onclick = exportRevenue; }
             }
             document.getElementById('factory-config-btn').classList.toggle('hidden', m !== 'factory');
             render(); persist();
@@ -133,90 +140,62 @@
 
         function renderProducts(container, dataObj, modeType) {
             let cat = ''; products.forEach((p, i) => {
-                if (p.cat !== cat) { cat = p.cat; container.innerHTML += `<h3 class="text-[11px] font-black text-slate-300 mb-3 mt-8 ml-2 uppercase border-l-4 border-amber-200 pl-2">【 ${cat.replace(/🥖 |🥯 |🍰 /g, '')} 】</h3>`; }
-                container.innerHTML += `<div class="product-card p-4 flex items-center justify-between shadow-sm mb-3"><div class="flex-1"><div class="font-bold text-slate-700 underline decoration-slate-100 underline-offset-4">${p.name}<span class="unit-tag">${p.unit}</span></div><p class="text-[10px] text-slate-300 mt-1">${modeType==='inventory'?'今日剩餘':'需求預估'}</p></div><div class="flex items-center bg-gray-50 rounded-xl p-1 border border-gray-100"><button onclick="changeQty('${modeType}', ${i}, -1)" class="stepper-btn shadow-sm active:bg-gray-100"><i class="fas fa-minus text-xs"></i></button><div class="w-12 text-center font-black text-slate-700">${dataObj[i] || 0}</div><button onclick="changeQty('${modeType}', ${i}, 1)" class="stepper-btn shadow-sm active:bg-gray-100"><i class="fas fa-plus text-xs"></i></button></div></div>`;
+                if (p.cat !== cat) { cat = p.cat; container.innerHTML += `<h3 class="text-[11px] font-black text-slate-300 mb-3 mt-8 ml-2 uppercase border-l-4 border-amber-200 pl-2 tracking-widest">【 ${cat.replace(/🥖 |🥯 |🍰 /g, '')} 】</h3>`; }
+                container.innerHTML += `<div class="product-card p-4 flex items-center justify-between shadow-sm mb-3"><div class="flex-1"><div class="font-bold text-slate-700 underline decoration-slate-100 underline-offset-4">${p.name}<span class="unit-tag font-bold text-[9px] border border-amber-200 px-1 rounded text-amber-600 ml-2">${p.unit}</span></div><p class="text-[10px] text-slate-300 mt-1">${modeType==='inventory'?'今日剩餘':'需求預估'}</p></div><div class="flex items-center bg-gray-50 rounded-xl p-1 border border-gray-100"><button onclick="changeQty('${modeType}', ${i}, -1)" class="stepper-btn shadow-sm active:bg-gray-100"><i class="fas fa-minus text-xs"></i></button><div class="w-12 text-center font-black text-slate-700">${dataObj[i] || 0}</div><button onclick="changeQty('${modeType}', ${i}, 1)" class="stepper-btn shadow-sm active:bg-gray-100"><i class="fas fa-plus text-xs"></i></button></div></div>`;
             });
         }
 
         function renderFactory(container) {
             const tom = new Date(); tom.setDate(tom.getDate()+1);
             if(!state.targetOrderDate) state.targetOrderDate = `${tom.getMonth()+1}/${tom.getDate()}`;
-            const [m, d] = state.targetOrderDate.split('/'); 
-            const yr = new Date().getFullYear();
-            const targetDateObj = new Date(yr, m-1, d);
-            const tDay = targetDateObj.getDay(); 
-            const isReg = [0, 2, 4].includes(tDay);
-            
-            // 💡 倒推計算前一天日期
-            const prevDateObj = new Date(targetDateObj);
-            prevDateObj.setDate(targetDateObj.getDate() - 1);
-            const prevStr = `${prevDateObj.getMonth()+1}/${prevDateObj.getDate()}`;
+            const [m, d] = state.targetOrderDate.split('/'); const targetDateObj = new Date(new Date().getFullYear(), m-1, d);
+            const tDay = targetDateObj.getDay(); const isReg = [0, 2, 4].includes(tDay);
+            const prevDate = new Date(targetDateObj); prevDate.setDate(targetDateObj.getDate() - 1);
+            const prevStr = `${prevDate.getMonth()+1}/${prevDate.getDate()}`;
 
-            container.innerHTML = `
-                <div class="bg-slate-800 p-6 rounded-[30px] mb-6 shadow-xl text-white text-center">
-                    <p class="text-[10px] font-black text-slate-400 mb-3 tracking-widest uppercase italic">預定到貨日期</p>
-                    <div class="grid grid-cols-2 gap-2 mb-4">
-                        <select id="f-date-m" onchange="updateTargetDate()" class="bg-slate-700 text-white text-center"></select>
-                        <select id="f-date-d" onchange="updateTargetDate()" class="bg-slate-700 text-white text-center"></select>
-                    </div>
-                    <div class="bg-white/10 p-3 rounded-2xl border border-white/5 mb-3">
-                        <p class="text-[12px] font-black ${isReg?'text-amber-300':'text-slate-400'}">${state.targetOrderDate} (週${['日','一','二','三','四','五','六'][tDay]}) ${isReg?'【出車日大補貨】':'【僅預定單補貨】'}</p>
-                    </div>
-                    <p class="text-[10px] font-bold text-red-400 animate-pulse">請在 ${prevStr} 11:00 之前送出訂單</p>
-                </div>
-                <div id="factory-list"></div>`;
-            
-            const ms = Array.from({length:12},(_,i)=>i+1), ds = Array.from({length:31},(_,i)=>i+1);
-            document.getElementById('f-date-m').innerHTML = ms.map(v=>`<option value="${v}" ${v==m?'selected':''}>${v}月</option>`).join('');
-            document.getElementById('f-date-d').innerHTML = ds.map(v=>`<option value="${v}" ${v==d?'selected':''}>${v}日</option>`).join('');
-            
+            container.innerHTML = `<div class="bg-slate-800 p-6 rounded-[30px] mb-6 shadow-xl text-white text-center"><p class="text-[10px] font-black text-slate-400 mb-3 tracking-widest uppercase italic">預定到貨日期</p><div class="grid grid-cols-2 gap-2 mb-4"><select id="f-date-m" onchange="updateTargetDate()" class="bg-slate-700 text-white text-center"></select><select id="f-date-d" onchange="updateTargetDate()" class="bg-slate-700 text-white text-center"></select></div><div class="bg-white/10 p-3 rounded-2xl border border-white/5 mb-3"><p class="text-[12px] font-black ${isReg?'text-amber-300':'text-slate-400'}">${state.targetOrderDate} (週${['日','一','二','三','四','五','六'][tDay]}) ${isReg?'【出車日大補貨】':'【僅預定補貨】'}</p></div><p class="text-[10px] font-bold text-red-400 animate-pulse">請在 ${prevStr} 11:00 之前送出訂單</p></div><div id="factory-list"></div>`;
+            Array.from({length:12},(_,i)=>i+1).forEach(v => document.getElementById('f-date-m').innerHTML += `<option value="${v}" ${v==m?'selected':''}>${v}月</option>`);
+            Array.from({length:31},(_,i)=>i+1).forEach(v => document.getElementById('f-date-d').innerHTML += `<option value="${v}" ${v==d?'selected':''}>${v}日</option>`);
             renderFactoryItems(document.getElementById('factory-list'), tDay);
         }
 
         function renderFactoryItems(container, dayOfWeek) {
-            let cat = ''; 
-            products.forEach((p, i) => {
+            let cat = ''; products.forEach((p, i) => {
                 const base = state.baseOrders[dayOfWeek][i] || 0; 
-                let oSum = 0; 
-                state.orders.forEach(o => { if(o.date === state.targetOrderDate) o.items.forEach(it => { if(it.name === p.name) oSum += it.qty; }); });
-                const inv = state.inventory[i] || 0; 
-                const suggest = Math.max(0, (base + oSum) - inv);
-                if (p.cat !== cat) { cat = p.cat; container.innerHTML += `<h3 class="text-[11px] font-black text-slate-300 mb-3 mt-8 ml-2 uppercase border-l-4 border-amber-200 pl-2">【 ${cat.replace(/🥖 |🥯 |🍰 /g, '')} 】</h3>`; }
+                let oSum = 0; state.orders.forEach(o => { if(o.date === state.targetOrderDate) o.items.forEach(it => { if(it.name === p.name) oSum += it.qty; }); });
+                const inv = state.inventory[i] || 0; const suggest = Math.max(0, (base + oSum) - inv);
+                if (p.cat !== cat) { cat = p.cat; container.innerHTML += `<h3 class="text-[11px] font-black text-slate-300 mb-3 mt-8 ml-2 uppercase border-l-4 border-amber-200 pl-2 tracking-widest">【 ${cat.replace(/🥖 |🥯 |🍰 /g, '')} 】</h3>`; }
                 container.innerHTML += `<div class="product-card p-4 flex items-center justify-between mb-3 ${suggest>0?'bg-amber-50/20 border-l-4 border-l-amber-400':''}"><div class="flex-1"><div class="font-bold text-slate-700">${p.name}</div><p class="text-[9px] text-slate-400 mt-1">基本:${base}+預定:${oSum}-庫存:${inv}</p></div><div class="flex items-center bg-white rounded-xl p-1 shadow-inner border border-gray-100"><button onclick="changeQty('factory',${i},-1)" class="stepper-btn"><i class="fas fa-minus text-xs"></i></button><div class="w-12 text-center font-black text-slate-700 text-lg">${state.factory[i] === undefined ? suggest : state.factory[i]}</div><button onclick="changeQty('factory',${i},1)" class="stepper-btn"><i class="fas fa-plus text-xs"></i></button></div></div>`;
                 if(state.factory[i] === undefined) state.factory[i] = suggest;
             });
         }
 
-        function showExportModal(text) { 
-            document.getElementById('export-text').value = text; 
-            document.getElementById('line-share-btn').href = `https://line.me/R/msg/text/?${encodeURIComponent(text)}`; 
-            document.getElementById('export-modal').classList.remove('hidden'); 
-        }
-
-        async function exportInventory() { 
-            let totalVal = 0; products.forEach((p, i) => totalVal += (state.inventory[i] || 0) * p.price);
-            const dStr = ['日','一','二','三','四','五','六'][state.session.dayOfWeek];
-            let txt = `📦【 鍇埕 | 收攤庫存 】\n📅 日期：${state.session.date}（${dStr}）\n📍 地點：${state.session.location}\n💰 庫存：${totalVal} 元\n------------------\n`; 
-            let cloud = {}; let hasAny = false;
-            products.forEach((p, i) => { if(state.inventory[i] > 0) { txt += `🔸 ${p.name}：${state.inventory[i]} 個\n`; cloud[p.name] = state.inventory[i]; hasAny = true; } }); 
-            if(!hasAny) txt += "本日無庫存剩餘。\n";
-            await syncToCloud('Inventory', cloud); showExportModal(txt); 
-        }
-
-        async function exportRevenue() { 
-            const disc = state.revenue.costRaw >= 12000 ? 0.5 : 0.55, totalExp = state.revenue.fuel + state.revenue.rent + state.revenue.elec + state.revenue.etc + state.revenue.other;
-            const net = (state.revenue.cash + state.revenue.lp) - (state.revenue.costRaw * disc) - totalExp; 
-            let txt = `💰【 鍇埕 | 營收報表 】\n📅 日期：${state.session.date}\n📍 地點：${state.session.location}\n------------------\n💵 總營收：$${state.revenue.cash + state.revenue.lp}\n📦 成本：$${state.revenue.costRaw * disc}\n💸 總支出：$${totalExp}\n------------------\n✨ 今日純利：$${Math.round(net)}`; 
-            await syncToCloud('Revenue', { "現金": state.revenue.cash, "LinePay": state.revenue.lp, "成本": state.revenue.costRaw * disc, "純利": Math.round(net) }); 
-            showExportModal(txt); 
-        }
-
-        async function exportFactory() { 
-            let txt = `📝【 鍇埕 | 工廠叫貨單 】\n📅 預定到貨日：${state.targetOrderDate}\n------------------\n`; 
-            let cloud = {}; let hasAny = false;
-            products.forEach((p, i) => { if(state.factory[i] > 0) { txt += `🔸 ${p.name}：${state.factory[i]} 個\n`; cloud[p.name] = state.factory[i]; hasAny = true; } }); 
-            if(!hasAny) txt += "本日無需叫貨。\n";
-            await syncToCloud('Factory', cloud); showExportModal(txt); 
+        function renderRevenue(container) {
+            container.innerHTML = `
+                <div class="space-y-6">
+                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                        <div class="flex justify-between items-center mb-4"><h3 class="text-xs font-black text-[#bfa07a] uppercase tracking-widest">單日收支結算</h3><span class="text-[10px] bg-slate-100 px-2 py-1 rounded font-bold italic">${state.session.date} @ ${state.session.location}</span></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="number" inputmode="decimal" id="rev-cash" oninput="saveRev()" placeholder="現金" value="${state.revenue.cash || ''}" class="bg-gray-50 p-4 rounded-2xl font-bold text-center outline-none">
+                            <input type="number" inputmode="decimal" id="rev-lp" oninput="saveRev()" placeholder="LinePay" value="${state.revenue.lp || ''}" class="bg-gray-50 p-4 rounded-2xl font-bold text-center outline-none">
+                        </div>
+                    </div>
+                    <div class="bg-amber-50/30 p-6 rounded-3xl border border-amber-100">
+                        <div class="flex justify-between mb-4"><h3 class="text-xs font-black text-amber-600 uppercase">進貨成本</h3><span id="discount-tag" class="text-[10px] font-bold"></span></div>
+                        <input type="number" inputmode="decimal" id="rev-cost-raw" oninput="saveRev()" placeholder="貨單總原價" value="${state.revenue.costRaw || ''}" class="w-full bg-white p-4 rounded-2xl font-black text-amber-700 text-center outline-none border border-amber-100 shadow-inner">
+                    </div>
+                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                        <h3 class="text-xs font-black text-red-400 uppercase mb-4">日常支出明細</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <input type="number" inputmode="decimal" id="exp-fuel" oninput="saveRev()" placeholder="加油" value="${state.revenue.fuel || ''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none text-center">
+                            <input type="number" inputmode="decimal" id="exp-rent" oninput="saveRev()" placeholder="租金" value="${state.revenue.rent || ''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none text-center">
+                            <input type="number" inputmode="decimal" id="exp-elec" oninput="saveRev()" placeholder="電費" value="${state.revenue.elec || ''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none text-center">
+                            <input type="number" inputmode="decimal" id="exp-etc" oninput="saveRev()" placeholder="ETC" value="${state.revenue.etc || ''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none text-center">
+                            <input type="number" inputmode="decimal" id="exp-other" oninput="saveRev()" placeholder="雜項支出" value="${state.revenue.other || ''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none col-span-2 text-center">
+                        </div>
+                    </div>
+                </div>`;
+            updateStat(); // 初始化純利計算
         }
 
         function renderOrders(container) {
@@ -225,11 +204,9 @@
             const list = document.getElementById('order-list-box');
             if(state.orders.length===0) { list.innerHTML = '<p class="text-center text-slate-400 py-10 font-bold italic">目前無預定紀錄</p>'; return; }
             state.orders.forEach((o, idx) => {
-                const item = document.createElement('div');
-                item.className = 'order-swipe-container shadow-sm';
-                item.innerHTML = `<div class="swipe-bg"><i class="fas fa-check-circle mr-2"></i> 已取餐</div><div class="order-item-content p-5 rounded-[30px] border border-gray-100" id="order-${idx}"><div class="absolute top-4 right-4 flex gap-4 text-slate-300"><button onclick="editOrder(${idx})"><i class="fas fa-pen"></i></button></div><div class="flex justify-between items-start pr-12"><div><span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded-md font-black italic">${o.date} ${o.time}</span><h4 class="font-black text-slate-700 mt-2 uppercase text-lg">${o.name} (${o.phone})</h4></div><span class="text-amber-600 font-black text-lg">$${o.total}</span></div><div class="text-[11px] text-slate-400 my-2 font-bold"><i class="fas fa-map-marker-alt mr-1"></i>${o.location}</div><div class="border-t border-dashed border-gray-100 pt-2 text-[11px] text-slate-500 font-bold">${o.items.map(i=>`${i.name}x${i.qty}`).join('、')}</div></div>`;
-                list.appendChild(item);
-                initSwipe(item, idx);
+                const item = document.createElement('div'); item.className = 'order-swipe-container';
+                item.innerHTML = `<div class="swipe-bg"><i class="fas fa-check-circle mr-2"></i> 已取餐</div><div class="order-item-content p-5 rounded-[30px] border border-gray-100 shadow-sm" id="order-${idx}"><div class="absolute top-4 right-4 text-slate-300"><button onclick="editOrder(${idx})"><i class="fas fa-pen"></i></button></div><div class="flex justify-between items-start pr-12"><div><span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded-md font-black italic">${o.date} ${o.time}</span><h4 class="font-black text-slate-700 mt-2 uppercase text-lg">${o.name} (${o.phone})</h4></div><span class="text-amber-600 font-black text-lg">$${o.total}</span></div><div class="text-[11px] text-slate-400 my-2 font-bold"><i class="fas fa-map-marker-alt mr-1"></i>${o.location}</div><div class="border-t border-dashed border-gray-100 pt-2 text-[11px] text-slate-500 font-bold">${o.items.map(i=>`${i.name}x${i.qty}`).join('、')}</div></div>`;
+                list.appendChild(item); initSwipe(item, idx);
             });
         }
 
@@ -237,38 +214,48 @@
             const content = el.querySelector('.order-item-content'), bg = el.querySelector('.swipe-bg');
             let startX = 0, currentX = 0;
             el.addEventListener('touchstart', e => { startX = e.touches[0].clientX; bg.style.opacity = 1; });
-            el.addEventListener('touchmove', e => {
-                currentX = e.touches[0].clientX - startX;
-                if(currentX > 0) { content.style.transform = `translateX(${currentX}px)`; bg.style.opacity = Math.min(currentX / 150, 1); }
-            });
-            el.addEventListener('touchend', () => {
-                if(currentX > 150) { content.style.transform = `translateX(100%)`; setTimeout(() => { state.orders.splice(idx,1); render(); persist(); }, 200); }
-                else { content.style.transform = `translateX(0)`; bg.style.opacity = 0; }
-                currentX = 0;
-            });
+            el.addEventListener('touchmove', e => { currentX = e.touches[0].clientX - startX; if(currentX > 0) { content.style.transform = `translateX(${currentX}px)`; bg.style.opacity = Math.min(currentX / 150, 1); } });
+            el.addEventListener('touchend', () => { if(currentX > 150) { content.style.transform = `translateX(100%)`; setTimeout(() => { state.orders.splice(idx,1); render(); persist(); }, 200); } else { content.style.transform = `translateX(0)`; bg.style.opacity = 0; } currentX = 0; });
         }
 
-        // --- 輔助邏輯 ---
+        // --- LINE 輸出 ---
+        function showExportModal(text) { document.getElementById('export-text').value = text; document.getElementById('line-share-btn').href = `https://line.me/R/msg/text/?${encodeURIComponent(text)}`; document.getElementById('export-modal').classList.remove('hidden'); }
+        async function exportInventory() { let totalVal = 0; products.forEach((p, i) => totalVal += (state.inventory[i] || 0) * p.price); const dStr = ['日','一','二','三','四','五','六'][state.session.dayOfWeek]; let txt = `📦【 鍇埕 | 收攤庫存 】\n📅 日期：${state.session.date}（${dStr}）\n📍 地點：${state.session.location}\n💰 庫存：${totalVal} 元\n------------------\n`; let hasAny = false; products.forEach((p, i) => { if(state.inventory[i] > 0) { txt += `🔸 ${p.name}：${state.inventory[i]} 個\n`; hasAny = true; } }); if(!hasAny) txt += "本日無庫存剩餘。\n"; showExportModal(txt); }
+        async function exportRevenue() { const disc = state.revenue.costRaw >= 12000 ? 0.5 : 0.55; const totalExp = state.revenue.fuel + state.revenue.rent + state.revenue.elec + state.revenue.etc + state.revenue.other; const net = (state.revenue.cash + state.revenue.lp) - (state.revenue.costRaw * disc) - totalExp; let txt = `💰【 鍇埕 | 營收報表 】\n📅 日期：${state.session.date}\n📍 地點：${state.session.location}\n------------------\n💵 總營收：$${state.revenue.cash + state.revenue.lp}\n📦 成本：$${state.revenue.costRaw * disc}\n💸 總支出：$${totalExp}\n------------------\n✨ 今日純利：$${Math.round(net)}`; showExportModal(txt); }
+        async function exportFactory() { let txt = `📝【 鍇埕 | 工廠叫貨單 】\n📅 標的日：${state.targetOrderDate}\n------------------\n`; let hasAny = false; products.forEach((p, i) => { if(state.factory[i] > 0) { txt += `🔸 ${p.name}：${state.factory[i]} 個\n`; hasAny = true; } }); if(!hasAny) txt += "本日無需叫貨。\n"; showExportModal(txt); }
+
+        function updateStat() {
+            const val = document.getElementById('stat-value'), lab = document.getElementById('stat-label');
+            if (state.mode === 'inventory') { let t = 0; products.forEach((p, i) => t += (state.inventory[i] || 0) * p.price); val.innerText = '$' + t.toLocaleString(); lab.innerText = '庫存金額'; }
+            else if (state.mode === 'factory') { let t = 0; products.forEach((p, i) => t += (state.factory[i] || 0) * p.price); val.innerText = '$' + t.toLocaleString(); lab.innerText = '預估叫貨金額'; }
+            else if (state.mode === 'revenue') { 
+                const disc = state.revenue.costRaw >= 12000 ? 0.5 : 0.55;
+                const net = (state.revenue.cash + state.revenue.lp) - (state.revenue.costRaw * disc) - (state.revenue.fuel + state.revenue.rent + state.revenue.elec + state.revenue.etc + state.revenue.other);
+                val.innerText = '$' + Math.round(net).toLocaleString(); lab.innerText = '預估淨利'; 
+                if(document.getElementById('discount-tag')) document.getElementById('discount-tag').innerText = `適用 ${disc*10} 折`;
+            }
+            else if (state.mode === 'orders') { let t = 0; state.orders.forEach(o => t += o.total); val.innerText = '$' + t.toLocaleString(); lab.innerText = '總預訂額'; }
+        }
+
+        // --- 其餘核心邏輯 ---
         function openSessionModal() { document.getElementById('session-modal').classList.remove('hidden'); const now = new Date(); document.getElementById('s-date-m').innerHTML = Array.from({length:12},(_,i)=>i+1).map(m=>`<option value="${m}" ${now.getMonth()+1===m?'selected':''}>${m}月</option>`).join(''); document.getElementById('s-date-d').innerHTML = Array.from({length:31},(_,i)=>i+1).map(d=>`<option value="${d}" ${now.getDate()===d?'selected':''}>${d}日</option>`).join(''); }
         function closeSessionModal() { document.getElementById('session-modal').classList.add('hidden'); switchMode('orders'); }
-        function confirmSession() { const m = document.getElementById('s-date-m').value, d = document.getElementById('s-date-d').value, yr = new Date().getFullYear(); state.session.dayOfWeek = new Date(yr, m-1, d).getDay(); state.session.active = true; state.session.date = `${m}/${d}`; state.session.location = document.getElementById('s-loc').value; document.getElementById('session-modal').classList.add('hidden'); document.getElementById('session-tag').classList.remove('hidden'); switchMode(state.tempMode || 'inventory'); }
-        function updateStat() { const val = document.getElementById('stat-value'), lab = document.getElementById('stat-label'); if (state.mode === 'inventory') { let t = 0; products.forEach((p, i) => t += (state.inventory[i] || 0) * p.price); val.innerText = '$' + t.toLocaleString(); lab.innerText = '庫存金額'; } else if (state.mode === 'factory') { let t = 0; products.forEach((p, i) => t += (state.factory[i] || 0) * p.price); val.innerText = '$' + t.toLocaleString(); lab.innerText = '預估叫貨金額'; } else if (state.mode === 'revenue') { const disc = state.revenue.costRaw >= 12000 ? 0.5 : 0.55; const net = (state.revenue.cash + state.revenue.lp) - (state.revenue.costRaw * disc) - (state.revenue.fuel + state.revenue.rent + state.revenue.elec + state.revenue.etc + state.revenue.other); val.innerText = '$' + Math.round(net).toLocaleString(); lab.innerText = '預估淨利'; } else if (state.mode === 'orders') { let t = 0; state.orders.forEach(o => t += o.total); val.innerText = '$' + t.toLocaleString(); lab.innerText = '總預訂額'; } else if (state.mode === 'analysis') { val.innerText = 'BETA'; lab.innerText = '統計中'; } }
-        function renderBaseItemPicker() { const day = document.getElementById('base-day-select').value, picker = document.getElementById('base-item-picker'); picker.innerHTML = ''; let cat = '', total = 0; products.forEach((p, i) => { if (p.cat !== cat) { cat = p.cat; picker.innerHTML += `<h3 class="text-[11px] font-black text-slate-300 mb-3 mt-6 ml-1 tracking-widest uppercase text-center">【 ${cat.replace(/🥖 |🥯 |🍰 /g, '')} 】</h3>`; } const qty = state.baseOrders[day][i] || 0; total += qty * p.price; picker.innerHTML += `<div class="bg-gray-50 p-4 rounded-2xl flex items-center justify-between mb-2"><span class="text-xs font-bold text-slate-600">${p.name}</span><div class="flex items-center bg-white rounded-xl p-1 shadow-sm"><button onclick="changeBaseQty(${day}, ${i}, -1)" class="w-8 h-8 flex items-center justify-center text-[#bfa07a]"><i class="fas fa-minus text-[10px]"></i></button><div class="w-10 text-center font-black text-slate-700 text-sm">${qty}</div><button onclick="changeBaseQty(${day}, ${i}, 1)" class="w-8 h-8 flex items-center justify-center text-[#bfa07a]"><i class="fas fa-plus text-[10px]"></i></button></div></div>`; }); document.getElementById('base-total').innerText = '$' + total.toLocaleString(); }
+        function confirmSession() { const m = document.getElementById('s-date-m').value, d = document.getElementById('s-date-d').value; state.session.dayOfWeek = new Date(new Date().getFullYear(), m-1, d).getDay(); state.session.active = true; state.session.date = `${m}/${d}`; state.session.location = document.getElementById('s-loc').value; document.getElementById('session-modal').classList.add('hidden'); document.getElementById('session-tag').classList.remove('hidden'); switchMode(state.tempMode || 'inventory'); }
         function openOrderModal() { state.orderDraft={}; state.editOrderIndex=null; document.getElementById('order-modal-title').innerText='📝 新增預定單'; document.getElementById('delete-order-btn').classList.add('hidden'); document.getElementById('o-name').value=''; document.getElementById('o-phone').value=''; document.getElementById('o-note').value=''; const now=new Date(); document.getElementById('o-date-m').innerHTML=Array.from({length:12},(_,i)=>i+1).map(m=>`<option value="${m}" ${m==now.getMonth()+1?'selected':''}>${m}月</option>`).join(''); document.getElementById('o-date-d').innerHTML=Array.from({length:31},(_,i)=>i+1).map(d=>`<option value="${d}" ${d==now.getDate()?'selected':''}>${d}日</option>`).join(''); document.getElementById('o-time-h').innerHTML=Array.from({length:24},(_,i)=>i).map(h=>`<option value="${h}">${h<10?'0'+h:h}點</option>`).join(''); document.getElementById('o-time-m').innerHTML=Array.from({length:60},(_,i)=>i).map(m=>`<option value="${m}">${m<10?'0'+m:m}分</option>`).join(''); document.getElementById('order-modal').classList.remove('hidden'); renderOrderItemPicker(); }
-        function renderOrderItemPicker() { const p=document.getElementById('order-item-picker'); p.innerHTML=''; let cat=''; products.forEach((prod,i)=>{ if(prod.cat!==cat){ cat=prod.cat; p.innerHTML+=`<h3 class="text-[10px] font-black text-slate-300 mb-2 mt-4 italic border-b pb-1 uppercase tracking-widest text-center">【 ${cat.replace(/🥖 |🥯 |🍰 /g,'')} 】</h3>`; } p.innerHTML+= `<div class="bg-white p-3 rounded-2xl flex items-center justify-between shadow-sm border border-gray-100 mb-2"><span class="text-xs font-bold text-slate-600">${prod.name}</span><div class="flex items-center bg-gray-50 rounded-xl p-1"><button onclick="changeQty('draft',${i},-1)" class="stepper-btn"><i class="fas fa-minus text-[10px]"></i></button><div id="draft-qty-${i}" class="w-8 text-center font-black text-slate-700 text-sm">${state.orderDraft[i]||0}</div><button onclick="changeQty('draft',${i},1)" class="stepper-btn"><i class="fas fa-plus text-[10px]"></i></button></div></div>`; }); }
-        function editOrder(idx) { state.editOrderIndex=idx; const o=state.orders[idx]; document.getElementById('order-modal-title').innerText='✏️ 修改預定單'; document.getElementById('delete-order-btn').classList.remove('hidden'); const [m,d]=o.date.split('/'), [h,min]=o.time.split(':'); document.getElementById('o-name').value=o.name; document.getElementById('o-phone').value=o.phone; document.getElementById('o-note').value=o.note||''; document.getElementById('o-date-m').value=m; document.getElementById('o-date-d').value=d; document.getElementById('o-time-h').value=parseInt(h); document.getElementById('o-time-m').value=parseInt(min); if(['嘉北街','吉品紅豆餅','溪口北極殿','中正大學'].includes(o.location)){ document.getElementById('o-loc-select').value=o.location; document.getElementById('o-loc-other').classList.add('hidden'); } else { document.getElementById('o-loc-select').value='其他'; document.getElementById('o-loc-other').value=o.location; document.getElementById('o-loc-other').classList.remove('hidden'); } state.orderDraft={}; products.forEach((p,i)=>{ const itm=o.items.find(it=>it.name===p.name); if(itm) state.orderDraft[i]=itm.qty; }); document.getElementById('order-modal').classList.remove('hidden'); renderOrderItemPicker(); }
+        function editOrder(idx) { state.editOrderIndex=idx; const o=state.orders[idx]; document.getElementById('order-modal-title').innerText='✏️ 修改預定單'; document.getElementById('delete-order-btn').classList.remove('hidden'); const [m,d]=o.date.split('/'), [h,min]=o.time.split(':'); document.getElementById('o-name').value=o.name; document.getElementById('o-phone').value=o.phone; document.getElementById('o-note').value=o.note||''; document.getElementById('o-date-m').value=m; document.getElementById('o-date-d').value=d; document.getElementById('o-time-h').value=parseInt(h); document.getElementById('o-time-m').value=parseInt(min); state.orderDraft={}; products.forEach((p,i)=>{ const itm=o.items.find(it=>it.name===p.name); if(itm) state.orderDraft[i]=itm.qty; }); document.getElementById('order-modal').classList.remove('hidden'); renderOrderItemPicker(); }
         function deleteCurrentOrder() { if(confirm("確定要刪除這筆訂單嗎？")) { state.orders.splice(state.editOrderIndex,1); closeOrderModal(); render(); persist(); } }
         function saveNewOrder() { const its=[]; let t=0; products.forEach((p,i)=>{ const q=state.orderDraft[i]||0; if(q>0){ its.push({name:p.name,qty:q}); t+=p.price*q; } }); const sel=document.getElementById('o-loc-select').value, fl=sel==='其他'?document.getElementById('o-loc-other').value:sel; const newO={ date:`${document.getElementById('o-date-m').value}/${document.getElementById('o-date-d').value}`, time:`${document.getElementById('o-time-h').value.padStart(2,'0')}:${document.getElementById('o-time-m').value.padStart(2,'0')}`, name:document.getElementById('o-name').value, phone:document.getElementById('o-phone').value, location:fl, note:document.getElementById('o-note').value, items:its, total:t }; if(state.editOrderIndex!==null) state.orders[state.editOrderIndex]=newO; else state.orders.push(newO); closeOrderModal(); render(); persist(); }
-        function changeBaseQty(day, i, d) { state.baseOrders[day][i] = Math.max(0, (state.baseOrders[day][i] || 0) + d); renderBaseItemPicker(); persist(); }
         function changeQty(type, i, d) { if(type === 'inventory') state.inventory[i] = Math.max(0, (state.inventory[i] || 0) + d); else if(type === 'factory') state.factory[i] = Math.max(0, (state.factory[i] || 0) + d); else if(type === 'draft') { state.orderDraft[i] = Math.max(0, (state.orderDraft[i] || 0) + d); document.getElementById(`draft-qty-${i}`).innerText = state.orderDraft[i]; } render(); persist(); }
-        function updateTargetDate() { state.targetOrderDate = `${document.getElementById('f-date-m').value}/${document.getElementById('f-date-d').value}`; state.factory = {}; render(); persist(); }
+        function changeBaseQty(day, i, d) { state.baseOrders[day][i] = Math.max(0, (state.baseOrders[day][i] || 0) + d); renderBaseItemPicker(); persist(); }
+        function renderBaseItemPicker() { const day = document.getElementById('base-day-select').value, picker = document.getElementById('base-item-picker'); picker.innerHTML = ''; let cat = '', total = 0; products.forEach((p, i) => { if (p.cat !== cat) { cat = p.cat; picker.innerHTML += `<h3 class="text-[11px] font-black text-slate-300 mb-3 mt-6 ml-1 tracking-widest uppercase text-center">【 ${cat.replace(/🥖 |🥯 |🍰 /g, '')} 】</h3>`; } const qty = state.baseOrders[day][i] || 0; total += qty * p.price; picker.innerHTML += `<div class="bg-gray-50 p-4 rounded-2xl flex items-center justify-between mb-2"><span class="text-xs font-bold text-slate-600">${p.name}</span><div class="flex items-center bg-white rounded-xl p-1 shadow-sm"><button onclick="changeBaseQty(${day}, ${i}, -1)" class="w-8 h-8 flex items-center justify-center text-[#bfa07a]"><i class="fas fa-minus text-[10px]"></i></button><div class="w-10 text-center font-black text-slate-700 text-sm">${qty}</div><button onclick="changeBaseQty(${day}, ${i}, 1)" class="w-8 h-8 flex items-center justify-center text-[#bfa07a]"><i class="fas fa-plus text-[10px]"></i></button></div></div>`; }); document.getElementById('base-total').innerText = '$' + total.toLocaleString(); }
         function saveRev() { if(state.mode !== 'revenue') return; state.revenue = { cash: Number(document.getElementById('rev-cash').value)||0, lp: Number(document.getElementById('rev-lp').value)||0, costRaw: Number(document.getElementById('rev-cost-raw').value)||0, fuel: Number(document.getElementById('exp-fuel').value)||0, rent: Number(document.getElementById('exp-rent').value)||0, elec: Number(document.getElementById('exp-elec').value)||0, etc: Number(document.getElementById('exp-etc').value)||0, other: Number(document.getElementById('exp-other').value)||0 }; updateStat(); persist(); }
+        function renderOrderItemPicker() { const p=document.getElementById('order-item-picker'); p.innerHTML=''; let cat=''; products.forEach((prod,i)=>{ if(prod.cat!==cat){ cat=prod.cat; p.innerHTML+=`<h3 class="text-[10px] font-black text-slate-300 mb-2 mt-4 italic border-b pb-1 uppercase tracking-widest text-center">【 ${cat.replace(/🥖 |🥯 |🍰 /g,'')} 】</h3>`; } p.innerHTML+= `<div class="bg-white p-3 rounded-2xl flex items-center justify-between shadow-sm border border-gray-100 mb-2"><span class="text-xs font-bold text-slate-600">${prod.name}</span><div class="flex items-center bg-gray-50 rounded-xl p-1"><button onclick="changeQty('draft',${i},-1)" class="stepper-btn"><i class="fas fa-minus text-[10px]"></i></button><div id="draft-qty-${i}" class="w-8 text-center font-black text-slate-700 text-sm">${state.orderDraft[i]||0}</div><button onclick="changeQty('draft',${i},1)" class="stepper-btn"><i class="fas fa-plus text-[10px]"></i></button></div></div>`; }); }
+        function updateTargetDate() { state.targetOrderDate = `${document.getElementById('f-date-m').value}/${document.getElementById('f-date-d').value}`; state.factory = {}; render(); persist(); }
         function toggleOtherLoc() { document.getElementById('o-loc-other').classList.toggle('hidden', document.getElementById('o-loc-select').value !== '其他'); }
         function closeOrderModal() { document.getElementById('order-modal').classList.add('hidden'); }
         function openBaseOrderModal() { document.getElementById('base-order-modal').classList.remove('hidden'); renderBaseItemPicker(); }
         function closeBaseOrderModal() { document.getElementById('base-order-modal').classList.add('hidden'); render(); }
-        function renderRevenue(container) { container.innerHTML = `<div class="space-y-6"><div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm"><div class="flex justify-between items-center mb-4"><h3 class="text-xs font-black text-[#bfa07a] uppercase">單日結算</h3><span class="text-[10px] bg-slate-100 px-2 py-1 rounded font-bold italic">${state.session.date} @ ${state.session.location}</span></div><div class="grid grid-cols-2 gap-4"><input type="number" inputmode="decimal" id="rev-cash" oninput="saveRev()" placeholder="現金" value="${state.revenue.cash||''}" class="bg-gray-50 p-4 rounded-2xl font-bold text-center outline-none"><input type="number" inputmode="decimal" id="rev-lp" oninput="saveRev()" placeholder="LinePay" value="${state.revenue.lp||''}" class="bg-gray-50 p-4 rounded-2xl font-bold text-center outline-none"></div></div><div class="bg-amber-50/30 p-6 rounded-3xl border border-amber-100"><div class="flex justify-between mb-4"><h3 class="text-xs font-black text-amber-600 uppercase">成本</h3><span id="discount-tag" class="text-[10px] font-bold"></span></div><input type="number" inputmode="decimal" id="rev-cost-raw" oninput="saveRev()" placeholder="總原價" value="${state.revenue.costRaw||''}" class="w-full bg-white p-4 rounded-2xl font-black text-amber-700 text-center outline-none border border-amber-100"></div><div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm"><h3 class="text-xs font-black text-red-400 uppercase mb-4">支出明細</h3><div class="grid grid-cols-2 gap-3"><input type="number" inputmode="decimal" id="exp-fuel" oninput="saveRev()" placeholder="加油" value="${state.revenue.fuel||''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none text-center"><input type="number" inputmode="decimal" id="exp-rent" oninput="saveRev()" placeholder="租金" value="${state.revenue.rent||''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none text-center"><input type="number" id="exp-elec" inputmode="decimal" oninput="saveRev()" placeholder="電費" value="${state.revenue.elec||''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none text-center"><input type="number" id="exp-etc" inputmode="decimal" oninput="saveRev()" placeholder="ETC" value="${state.revenue.etc||''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none text-center"><input type="number" id="exp-other" inputmode="decimal" oninput="saveRev()" placeholder="雜項" value="${state.revenue.other||''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none col-span-2 text-center"></div></div></div>`; saveRev(); }
-        function renderAnalysis(container) { container.innerHTML = `<div class="p-8 text-center"><i class="fas fa-brain text-4xl text-slate-200 mb-4"></i><p class="text-slate-400 font-bold italic">營業大腦數據累積中...<br>請先完成 3 次以上的單日結算</p></div>`; }
+        function renderAnalysis(container) { container.innerHTML = `<div class="p-8 text-center"><i class="fas fa-brain text-4xl text-slate-200 mb-4"></i><p class="text-slate-400 font-bold italic">營業分析數據正在累積中...</p></div>`; }
 
         loadData(); switchMode('orders');
     </script>
