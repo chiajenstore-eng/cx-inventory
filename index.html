@@ -15,13 +15,17 @@
         .stepper-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #fff; color: #bfa07a; border: 1px solid #eee; border-radius: 10px; }
         .unit-tag { font-size: 10px; color: #bfa07a; border: 1px solid #bfa07a; padding: 0 4px; border-radius: 4px; margin-left: 6px; }
         select { -webkit-appearance: none; appearance: none; background: #f9f9f9; border: none; padding: 12px; border-radius: 15px; font-weight: bold; color: #333; width: 100%; text-align: center; }
+        .glass-modal { background: rgba(255, 255, 255, 0.95); backdrop-blur: 10px; border-top: 1px solid rgba(255,255,255,0.3); }
     </style>
 </head>
 <body class="pb-32">
     <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 px-6 py-5 flex justify-between items-center shadow-sm">
         <div>
-            <h1 class="text-2xl font-black text-slate-800 italic tracking-tighter uppercase">CHENG XIN</h1>
-            <p id="current-mode-title" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 text-center bg-slate-100 rounded-full px-2">收攤點貨</p>
+            <div class="flex items-center gap-2">
+                <h1 class="text-2xl font-black text-slate-800 italic tracking-tighter uppercase">CHENG XIN</h1>
+                <span id="session-tag" class="text-[9px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold hidden">已開班</span>
+            </div>
+            <p id="current-mode-title" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">收攤點貨</p>
         </div>
         <div class="text-right">
             <span id="stat-value" class="text-xl font-black text-red-500">$0</span>
@@ -52,6 +56,39 @@
         </div>
     </nav>
 
+    <div id="session-modal" class="hidden fixed inset-0 z-[200] bg-black/80 backdrop-blur-md flex items-center justify-center p-6">
+        <div class="bg-white w-full max-w-sm rounded-[40px] p-8 shadow-2xl">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">
+                    <i class="fas fa-store"></i>
+                </div>
+                <h2 class="text-xl font-black text-slate-800">開始登打數據</h2>
+                <p class="text-xs text-slate-400 mt-1 font-bold text-center">請先確認今日營業資訊</p>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] font-black text-slate-400 uppercase ml-1">營業日期</label>
+                    <div class="grid grid-cols-2 gap-2 mt-1">
+                        <select id="s-date-m"></select>
+                        <select id="s-date-d"></select>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-slate-400 uppercase ml-1">營業地點</label>
+                    <select id="s-loc" class="mt-1 font-bold text-slate-700">
+                        <option value="嘉北街">嘉北街</option>
+                        <option value="吉品紅豆餅">吉品紅豆餅</option>
+                        <option value="溪口北極殿">溪口北極殿</option>
+                        <option value="中正大學">中正大學</option>
+                        <option value="其他">其他</option>
+                    </select>
+                </div>
+                <button onclick="confirmSession()" class="w-full bg-[#bfa07a] text-white py-4 rounded-2xl font-bold text-lg mt-4 shadow-lg shadow-[#bfa07a]/30">進入系統</button>
+            </div>
+        </div>
+    </div>
+
     <div id="order-modal" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end">
         <div class="bg-white w-full rounded-t-[40px] p-6 max-h-[95vh] overflow-hidden flex flex-col">
             <div class="flex justify-between items-center mb-4">
@@ -64,18 +101,13 @@
                     <div class="grid grid-cols-3 gap-2">
                         <select id="o-date-m"></select>
                         <select id="o-date-d"></select>
-                        <div class="flex gap-1 col-span-1">
-                            <select id="o-time-h"></select>
-                            <select id="o-time-m"></select>
-                        </div>
+                        <div class="flex gap-1 col-span-1"><select id="o-time-h"></select><select id="o-time-m"></select></div>
                     </div>
                 </div>
-
                 <div class="grid grid-cols-2 gap-3">
                     <input type="text" id="o-name" placeholder="客人姓名" class="bg-gray-50 p-4 rounded-2xl text-sm outline-none font-bold text-slate-700">
                     <input type="text" id="o-phone" placeholder="手機末三碼" class="bg-gray-50 p-4 rounded-2xl text-sm outline-none font-bold text-slate-700">
                 </div>
-
                 <div class="space-y-2">
                     <select id="o-loc-select" onchange="toggleOtherLoc()" class="font-bold text-slate-700">
                         <option value="嘉北街">📍 嘉北街</option>
@@ -84,13 +116,10 @@
                         <option value="中正大學">📍 中正大學</option>
                         <option value="其他">📍 其他 (手動輸入)</option>
                     </select>
-                    <input type="text" id="o-loc-other" placeholder="輸入其他取餐地點" class="hidden w-full bg-amber-50 p-4 rounded-2xl text-sm outline-none border border-amber-100 font-bold text-amber-700">
+                    <input type="text" id="o-loc-other" placeholder="輸入其他地點" class="hidden w-full bg-amber-50 p-4 rounded-2xl text-sm outline-none border border-amber-100 font-bold text-amber-700">
                 </div>
-                
                 <h3 class="font-bold text-slate-700 pt-2 border-t border-gray-100">預定品項</h3>
-                <div id="order-item-picker" class="space-y-2">
-                    </div>
-                
+                <div id="order-item-picker" class="space-y-2"></div>
                 <textarea id="o-note" placeholder="備註..." class="w-full bg-gray-50 p-4 rounded-2xl text-sm outline-none h-20 font-bold text-slate-700"></textarea>
                 <button onclick="saveNewOrder()" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-bold text-lg shadow-xl">確認加入訂單</button>
             </div>
@@ -155,28 +184,48 @@
 
         let state = {
             mode: 'inventory',
+            session: { active: false, date: '', location: '' },
             inventory: {}, factory: {}, orders: [], 
-            orderDraft: {}, // 用於暫存彈窗內的點選數量
+            orderDraft: {},
             revenue: { cash: 0, lp: 0, costRaw: 0, fuel: 0, rent: 0, elec: 0, etc: 0, other: 0 }
         };
 
         function switchMode(m) {
+            // 如果進入點貨或營收，且尚未開班，彈出詢問視窗
+            if ((m === 'inventory' || m === 'revenue') && !state.session.active) {
+                openSessionModal();
+                return;
+            }
             state.mode = m;
             ['inventory', 'revenue', 'orders', 'factory'].forEach(t => document.getElementById('nav-'+t).classList.toggle('active-tab', t===m));
             document.getElementById('current-mode-title').innerText = {inventory:'收攤點貨', revenue:'當日營收', orders:'訂單管理', factory:'工廠叫貨'}[m];
             render();
         }
 
+        function openSessionModal() {
+            document.getElementById('session-modal').classList.remove('hidden');
+            const now = new Date();
+            const months = Array.from({length:12}, (_,i)=>i+1);
+            const days = Array.from({length:31}, (_,i)=>i+1);
+            document.getElementById('s-date-m').innerHTML = months.map(m=>`<option value="${m}" ${now.getMonth()+1===m?'selected':''}>${m}月</option>`).join('');
+            document.getElementById('s-date-d').innerHTML = days.map(d=>`<option value="${d}" ${now.getDate()===d?'selected':''}>${d}日</option>`).join('');
+        }
+
+        function confirmSession() {
+            state.session.active = true;
+            state.session.date = `${document.getElementById('s-date-m').value}/${document.getElementById('s-date-d').value}`;
+            state.session.location = document.getElementById('s-loc').value;
+            document.getElementById('session-modal').classList.add('hidden');
+            document.getElementById('session-tag').classList.remove('hidden');
+            switchMode(state.mode || 'inventory');
+        }
+
         function render() {
             const app = document.getElementById('app');
             app.innerHTML = '';
-            if (state.mode === 'inventory' || state.mode === 'factory') {
-                renderProducts(app);
-            } else if (state.mode === 'revenue') {
-                renderRevenue(app);
-            } else if (state.mode === 'orders') {
-                renderOrders(app);
-            }
+            if (state.mode === 'inventory' || state.mode === 'factory') renderProducts(app);
+            else if (state.mode === 'revenue') renderRevenue(app);
+            else if (state.mode === 'orders') renderOrders(app);
             updateStat();
         }
 
@@ -194,10 +243,10 @@
                             <div class="font-bold text-slate-700 underline decoration-[#bfa07a]/30">${p.name}<span class="unit-tag">${p.unit}</span></div>
                             <p class="text-[10px] text-slate-300 mt-1">${state.mode==='inventory'?'$'+p.price:'工廠叫貨'}</p>
                         </div>
-                        <div class="flex items-center bg-gray-50 rounded-xl p-1 border border-gray-100">
-                            <button onclick="changeQty(${i},-1)" class="stepper-btn active:bg-gray-100 shadow-sm"><i class="fas fa-minus"></i></button>
+                        <div class="flex items-center bg-gray-50 rounded-xl p-1">
+                            <button onclick="changeQty(${i},-1)" class="stepper-btn shadow-sm active:bg-gray-100"><i class="fas fa-minus"></i></button>
                             <div class="w-12 text-center font-black text-slate-700">${data[i] || 0}</div>
-                            <button onclick="changeQty(${i},1)" class="stepper-btn active:bg-gray-100 shadow-sm"><i class="fas fa-plus"></i></button>
+                            <button onclick="changeQty(${i},1)" class="stepper-btn shadow-sm active:bg-gray-100"><i class="fas fa-plus"></i></button>
                         </div>
                     </div>`;
             });
@@ -207,7 +256,10 @@
             container.innerHTML = `
                 <div class="space-y-6">
                     <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                        <h3 class="text-xs font-black text-[#bfa07a] uppercase mb-4">營業收入</h3>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xs font-black text-[#bfa07a] uppercase tracking-widest">營業收入</h3>
+                            <span class="text-[10px] text-slate-300 font-bold">${state.session.date} @ ${state.session.location}</span>
+                        </div>
                         <div class="grid grid-cols-2 gap-4">
                             <input type="number" id="rev-cash" oninput="saveRev()" placeholder="現金" value="${state.revenue.cash||''}" class="bg-gray-50 p-4 rounded-2xl font-bold outline-none text-slate-700">
                             <input type="number" id="rev-lp" oninput="saveRev()" placeholder="LINE PAY" value="${state.revenue.lp||''}" class="bg-gray-50 p-4 rounded-2xl font-bold outline-none text-slate-700">
@@ -220,9 +272,9 @@
                     <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
                         <h3 class="text-xs font-black text-red-400 uppercase mb-4">支出項目</h3>
                         <div class="grid grid-cols-2 gap-3">
-                            <input type="number" id="exp-fuel" oninput="saveRev()" placeholder="加油" value="${state.revenue.fuel||''}" class="bg-gray-50 p-3 rounded-xl outline-none text-slate-700"><input type="number" id="exp-rent" oninput="saveRev()" placeholder="餐車租金" value="${state.revenue.rent||''}" class="bg-gray-50 p-3 rounded-xl outline-none text-slate-700">
-                            <input type="number" id="exp-elec" oninput="saveRev()" placeholder="電費" value="${state.revenue.elec||''}" class="bg-gray-50 p-3 rounded-xl outline-none text-slate-700"><input type="number" id="exp-etc" oninput="saveRev()" placeholder="ETC" value="${state.revenue.etc||''}" class="bg-gray-50 p-3 rounded-xl outline-none text-slate-700">
-                            <input type="number" id="exp-other" oninput="saveRev()" placeholder="其他" value="${state.revenue.other||''}" class="bg-gray-50 p-3 rounded-xl outline-none col-span-2 text-slate-700">
+                            <input type="number" id="exp-fuel" oninput="saveRev()" placeholder="加油" value="${state.revenue.fuel||''}" class="bg-gray-50 p-3 rounded-xl outline-none"><input type="number" id="exp-rent" oninput="saveRev()" placeholder="餐車租金" value="${state.revenue.rent||''}" class="bg-gray-50 p-3 rounded-xl outline-none">
+                            <input type="number" id="exp-elec" oninput="saveRev()" placeholder="電費" value="${state.revenue.elec||''}" class="bg-gray-50 p-3 rounded-xl outline-none"><input type="number" id="exp-etc" oninput="saveRev()" placeholder="ETC" value="${state.revenue.etc||''}" class="bg-gray-50 p-3 rounded-xl outline-none">
+                            <input type="number" id="exp-other" oninput="saveRev()" placeholder="其他" value="${state.revenue.other||''}" class="bg-gray-50 p-3 rounded-xl outline-none col-span-2">
                         </div>
                     </div>
                 </div>`;
@@ -245,22 +297,6 @@
                     </div>`).join('')}</div>`;
         }
 
-        function toggleOtherLoc() {
-            const val = document.getElementById('o-loc-select').value;
-            document.getElementById('o-loc-other').classList.toggle('hidden', val !== '其他');
-        }
-
-        function changeQty(i, d) {
-            const data = state.mode === 'inventory' ? state.inventory : state.factory;
-            data[i] = Math.max(0, (data[i] || 0) + d);
-            render();
-        }
-
-        function changeOrderDraftQty(i, d) {
-            state.orderDraft[i] = Math.max(0, (state.orderDraft[i] || 0) + d);
-            document.getElementById(`draft-qty-${i}`).innerText = state.orderDraft[i];
-        }
-
         function updateStat() {
             const val = document.getElementById('stat-value'), lab = document.getElementById('stat-label');
             if (state.mode === 'inventory') {
@@ -273,7 +309,8 @@
             } else if (state.mode === 'revenue') {
                 const disc = state.revenue.costRaw >= 12000 ? 0.5 : 0.55;
                 const net = (state.revenue.cash + state.revenue.lp) - (state.revenue.costRaw * disc) - (Object.values(state.revenue).reduce((a,b)=>a+b,0) - state.revenue.cash - state.revenue.lp - state.revenue.costRaw);
-                val.innerText = '$' + Math.round(net).toLocaleString(); lab.innerText = '預估淨利';
+                val.innerText = '$' + Math.round(net).toLocaleString(); lab.innerText = '當日純利預估';
+                if(document.getElementById('discount-tag')) document.getElementById('discount-tag').innerText = `適用 ${disc*10} 折`;
             } else if (state.mode === 'orders') {
                 let t = 0; state.orders.forEach(o => t += o.total);
                 val.innerText = '$' + t.toLocaleString(); lab.innerText = '今日訂單營業額';
@@ -281,10 +318,9 @@
         }
 
         function openOrderModal() {
-            state.orderDraft = {}; // 重置暫存數量
+            state.orderDraft = {};
             document.getElementById('order-modal').classList.remove('hidden');
             const p = document.getElementById('order-item-picker');
-            
             p.innerHTML = products.map((prod, i) => `
                 <div class="product-card p-3 flex items-center justify-between shadow-none border border-gray-50 mb-2">
                     <span class="text-xs font-bold text-slate-600">${prod.name}</span>
@@ -315,7 +351,6 @@
             });
             const selLoc = document.getElementById('o-loc-select').value;
             const finalLoc = selLoc === '其他' ? document.getElementById('o-loc-other').value : selLoc;
-            
             state.orders.push({
                 date: `${document.getElementById('o-date-m').value}/${document.getElementById('o-date-d').value}`,
                 time: `${document.getElementById('o-time-h').value}:${document.getElementById('o-time-m').value}`,
@@ -326,9 +361,18 @@
             closeOrderModal(); render();
         }
 
+        function toggleOtherLoc() { document.getElementById('o-loc-other').classList.toggle('hidden', document.getElementById('o-loc-select').value !== '其他'); }
         function closeOrderModal() { document.getElementById('order-modal').classList.add('hidden'); }
-        function handleMainAction() { alert('數據儲存成功！'); }
-        
+        function handleMainAction() { alert(`數據已鎖定於 ${state.session.date} 在 ${state.session.location}！`); }
+        function changeQty(i, d) {
+            const data = state.mode === 'inventory' ? state.inventory : state.factory;
+            data[i] = Math.max(0, (data[i] || 0) + d);
+            render();
+        }
+        function changeOrderDraftQty(i, d) {
+            state.orderDraft[i] = Math.max(0, (state.orderDraft[i] || 0) + d);
+            document.getElementById(`draft-qty-${i}`).innerText = state.orderDraft[i];
+        }
         function saveRev() {
             if(state.mode !== 'revenue') return;
             state.revenue = {
@@ -340,6 +384,7 @@
             updateStat();
         }
 
+        // 初始狀態：先切換到點貨，會觸發開班 Modal
         switchMode('inventory');
     </script>
 </body>
