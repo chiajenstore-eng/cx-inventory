@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>埕心 SELECT | 旗艦管理系統</title>
+    <title>埕心 Select | 旗艦管理系統</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -21,8 +21,8 @@
     <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 px-6 py-5 flex justify-between items-center shadow-sm">
         <div>
             <div class="flex items-center gap-2">
-                <h1 class="text-2xl font-black text-slate-800 italic tracking-tighter uppercase">CHENG XIN</h1>
-                <span id="session-tag" class="text-[9px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold hidden">結算模式中</span>
+                <h1 class="text-2xl font-black text-slate-800 italic tracking-tighter uppercase">【 埕心 Select 】</h1>
+                <span id="session-tag" class="text-[9px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold hidden">結算模式</span>
             </div>
             <p id="current-mode-title" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">管理系統</p>
         </div>
@@ -55,7 +55,7 @@
                 <h2 class="text-xl font-black text-slate-800 italic">⚙️ 基本量設定</h2>
                 <div class="text-right">
                     <span id="base-total" class="text-lg font-black text-amber-600">$0</span>
-                    <p class="text-[9px] text-slate-400 font-bold uppercase">預計成本</p>
+                    <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">預計總金額</p>
                 </div>
             </div>
             <select id="base-day-select" onchange="renderBaseItemPicker()" class="mb-4 bg-amber-50 text-amber-700">
@@ -74,15 +74,15 @@
             <button onclick="closeSessionModal()" class="absolute top-6 right-8 text-slate-300 text-2xl font-bold">&times;</button>
             <div class="text-center mb-6 pt-4">
                 <div class="w-16 h-16 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl"><i class="fas fa-calendar-check"></i></div>
-                <h2 class="text-xl font-black text-slate-800 italic">開始今日結算</h2>
-                <p class="text-xs text-slate-400 mt-1 font-bold">請確認日期與地點以對位後台數據</p>
+                <h2 class="text-xl font-black text-slate-800 italic">今日結算對位</h2>
+                <p class="text-xs text-slate-400 mt-1 font-bold italic text-center leading-relaxed">請選擇日期與地點<br>確保後台數據正確對應</p>
             </div>
             <div class="space-y-4">
                 <div class="grid grid-cols-2 gap-2"><select id="s-date-m"></select><select id="s-date-d"></select></div>
                 <select id="s-loc" class="font-bold text-slate-700">
                     <option value="嘉北街">📍 嘉北街</option><option value="吉品紅豆餅">📍 吉品紅豆餅</option><option value="溪口北極殿">📍 溪口北極殿</option><option value="中正大學">📍 中正大學</option><option value="其他">📍 其他</option>
                 </select>
-                <button onclick="confirmSession()" class="w-full bg-[#bfa07a] text-white py-4 rounded-2xl font-bold text-lg mt-4 shadow-lg shadow-[#bfa07a]/30">進入系統</button>
+                <button onclick="confirmSession()" class="w-full bg-[#bfa07a] text-white py-4 rounded-2xl font-bold text-lg mt-4 shadow-lg shadow-[#bfa07a]/30">確認進入</button>
             </div>
         </div>
     </div>
@@ -97,7 +97,7 @@
                 <div class="grid grid-cols-2 gap-3"><input type="text" id="o-name" placeholder="姓名" class="bg-gray-50 p-4 rounded-2xl font-bold"><input type="text" id="o-phone" placeholder="末三碼" class="bg-gray-50 p-4 rounded-2xl font-bold"></div>
                 <select id="o-loc-select" onchange="toggleOtherLoc()" class="font-bold text-slate-700"><option value="嘉北街">📍 嘉北街</option><option value="吉品紅豆餅">📍 吉品紅豆餅</option><option value="溪口北極殿">📍 溪口北極殿</option><option value="中正大學">📍 中正大學</option><option value="其他">📍 其他</option></select>
                 <input type="text" id="o-loc-other" placeholder="手動輸入地點" class="hidden w-full bg-amber-50 p-4 rounded-2xl font-bold border border-amber-100 text-amber-700">
-                <h3 class="font-black text-slate-700 border-t border-gray-100 pt-4">預定品項</h3>
+                <h3 class="font-black text-slate-700 border-t border-gray-100 pt-4 tracking-widest uppercase">預定品項</h3>
                 <div id="order-item-picker" class="space-y-4"></div>
                 <textarea id="o-note" placeholder="備註..." class="w-full bg-gray-50 p-4 rounded-2xl font-bold h-20"></textarea>
                 <button onclick="saveNewOrder()" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-bold text-lg shadow-xl">確認加入預定單</button>
@@ -107,7 +107,6 @@
 
     <script>
         const products = [
-            // 麵包區
             { cat: "🥖 麵包區", name: "黃金牛角", price: 35, unit: "個" },
             { cat: "🥖 麵包區", name: "原味小菠蘿", price: 35, unit: "2入" },
             { cat: "🥖 麵包區", name: "奶酥菠蘿", price: 35, unit: "個" },
@@ -139,14 +138,12 @@
             { cat: "🥖 麵包區", name: "千層牛奶棒", price: 45, unit: "2入" },
             { cat: "🥖 麵包區", name: "蜂蜜起酥蛋糕", price: 35, unit: "個" },
             { cat: "🥖 麵包區", name: "QQ布丁麵包", price: 55, unit: "個" },
-            // 貝果、吐司區
             { cat: "🥯 貝果、吐司區", name: "原味軟貝果", price: 35, unit: "個" },
             { cat: "🥯 貝果、吐司區", name: "火龍果乳酪貝果", price: 45, unit: "個" },
             { cat: "🥯 貝果、吐司區", name: "巧克力貝果", price: 45, unit: "個" },
             { cat: "🥯 貝果、吐司區", name: "藍莓抹醬貝果", price: 45, unit: "個" },
             { cat: "🥯 貝果、吐司區", name: "三色厚片吐司", price: 35, unit: "2片" },
             { cat: "🥯 貝果、吐司區", name: "千層小吐司", price: 55, unit: "個" },
-            // 蛋糕點心區
             { cat: "🍰 蛋糕點心區", name: "花瓣檸檬塔", price: 35, unit: "個" },
             { cat: "🍰 蛋糕點心區", name: "台式小蛋塔", price: 35, unit: "2入" },
             { cat: "🍰 蛋糕點心區", name: "蛋糕捲 (巧克力)", price: 50, unit: "個" },
@@ -176,47 +173,19 @@
         let state = {
             mode: 'orders',
             session: { active: false, date: '', location: '', dayOfWeek: 0 },
-            inventory: {}, factory: {}, orders: [], orderDraft: {},
+            targetOrderDate: '', inventory: {}, factory: {}, orders: [], orderDraft: {},
             baseOrders: { 0:{}, 1:{}, 2:{}, 3:{}, 4:{}, 5:{}, 6:{} },
             revenue: { cash: 0, lp: 0, costRaw: 0, fuel: 0, rent: 0, elec: 0, etc: 0, other: 0 }
         };
 
         function switchMode(m) {
-            if ((m === 'inventory' || m === 'revenue') && !state.session.active) {
-                state.tempMode = m; openSessionModal(); return;
-            }
+            if ((m === 'inventory' || m === 'revenue') && !state.session.active) { state.tempMode = m; openSessionModal(); return; }
             state.mode = m;
-            ['inventory', 'revenue', 'orders', 'factory', 'analysis'].forEach(t => {
-                if(document.getElementById('nav-'+t)) document.getElementById('nav-'+t).classList.toggle('active-tab', t===m);
-            });
-            document.getElementById('current-mode-title').innerText = {inventory:'收攤點貨', revenue:'營收結算', orders:'預定管理', factory:'工廠叫貨', analysis:'營業分析'}[m];
+            ['inventory', 'revenue', 'orders', 'factory', 'analysis'].forEach(t => { if(document.getElementById('nav-'+t)) document.getElementById('nav-'+t).classList.toggle('active-tab', t===m); });
+            document.getElementById('current-mode-title').innerText = {inventory:'收攤點貨結算', revenue:'營收利潤結算', orders:'預定單管理', factory:'工廠叫貨規劃', analysis:'營業數據分析'}[m];
             document.getElementById('action-bar').classList.toggle('hidden', m !== 'inventory' && m !== 'revenue');
             document.getElementById('factory-config-btn').classList.toggle('hidden', m !== 'factory');
             render();
-        }
-
-        function openSessionModal() {
-            document.getElementById('session-modal').classList.remove('hidden');
-            const now = new Date();
-            document.getElementById('s-date-m').innerHTML = Array.from({length:12},(_,i)=>i+1).map(m=>`<option value="${m}" ${now.getMonth()+1===m?'selected':''}>${m}月</option>`).join('');
-            document.getElementById('s-date-d').innerHTML = Array.from({length:31},(_,i)=>i+1).map(d=>`<option value="${d}" ${now.getDate()===d?'selected':''}>${d}日</option>`).join('');
-        }
-
-        function closeSessionModal() {
-            document.getElementById('session-modal').classList.add('hidden');
-            switchMode('orders'); // 強制跳回預定管理，避免停留在未開班的模式
-        }
-
-        function confirmSession() {
-            const m = document.getElementById('s-date-m').value;
-            const d = document.getElementById('s-date-d').value;
-            state.session.dayOfWeek = new Date(new Date().getFullYear(), m-1, d).getDay();
-            state.session.active = true;
-            state.session.date = `${m}/${d}`;
-            state.session.location = document.getElementById('s-loc').value;
-            document.getElementById('session-modal').classList.add('hidden');
-            document.getElementById('session-tag').classList.remove('hidden');
-            switchMode(state.tempMode || 'inventory');
         }
 
         function render() {
@@ -230,125 +199,73 @@
         }
 
         function renderProducts(container, dataObj, modeType) {
-            let cat = '';
-            products.forEach((p, i) => {
-                if (p.cat !== cat) {
-                    cat = p.cat;
-                    container.innerHTML += `<h3 class="text-[11px] font-black text-slate-300 mb-3 mt-8 ml-2 uppercase tracking-[0.2em] border-l-4 border-amber-200 pl-2">【 ${cat.replace(/🥖 |🥯 |🍰 /g, '')} 】</h3>`;
-                }
-                container.innerHTML += `
-                    <div class="product-card p-4 flex items-center justify-between shadow-sm mb-3">
-                        <div class="flex-1">
-                            <div class="font-bold text-slate-700 underline decoration-slate-100 underline-offset-4">${p.name}<span class="unit-tag">${p.unit}</span></div>
-                            <p class="text-[10px] text-slate-300 mt-1">${modeType==='inventory'?'今日剩餘':'明日需求'}</p>
-                        </div>
-                        <div class="flex items-center bg-gray-50 rounded-xl p-1 border border-gray-100">
-                            <button onclick="changeQty('${modeType}', ${i}, -1)" class="stepper-btn shadow-sm active:bg-gray-100"><i class="fas fa-minus text-xs"></i></button>
-                            <div class="w-12 text-center font-black text-slate-700">${dataObj[i] || 0}</div>
-                            <button onclick="changeQty('${modeType}', ${i}, 1)" class="stepper-btn shadow-sm active:bg-gray-100"><i class="fas fa-plus text-xs"></i></button>
-                        </div>
-                    </div>`;
+            let cat = ''; products.forEach((p, i) => {
+                if (p.cat !== cat) { cat = p.cat; container.innerHTML += `<h3 class="text-[11px] font-black text-slate-300 mb-3 mt-8 ml-2 uppercase tracking-[0.2em] border-l-4 border-amber-200 pl-2">【 ${cat.replace(/🥖 |🥯 |🍰 /g, '')} 】</h3>`; }
+                container.innerHTML += `<div class="product-card p-4 flex items-center justify-between shadow-sm mb-3"><div class="flex-1"><div class="font-bold text-slate-700 underline decoration-slate-100 underline-offset-4">${p.name}<span class="unit-tag">${p.unit}</span></div><p class="text-[10px] text-slate-300 mt-1">${modeType==='inventory'?'今日剩餘庫存':'明日需求預估'}</p></div><div class="flex items-center bg-gray-50 rounded-xl p-1 border border-gray-100"><button onclick="changeQty('${modeType}', ${i}, -1)" class="stepper-btn shadow-sm active:bg-gray-100"><i class="fas fa-minus text-xs"></i></button><div class="w-12 text-center font-black text-slate-700">${dataObj[i] || 0}</div><button onclick="changeQty('${modeType}', ${i}, 1)" class="stepper-btn shadow-sm active:bg-gray-100"><i class="fas fa-plus text-xs"></i></button></div></div>`;
             });
         }
 
         function renderBaseItemPicker() {
             const day = document.getElementById('base-day-select').value;
-            const picker = document.getElementById('base-item-picker');
-            picker.innerHTML = '';
-            let cat = '';
-            let total = 0;
+            const picker = document.getElementById('base-item-picker'); picker.innerHTML = '';
+            let cat = ''; let total = 0;
             products.forEach((p, i) => {
-                if (p.cat !== cat) {
-                    cat = p.cat;
-                    picker.innerHTML += `<h3 class="text-[11px] font-black text-slate-300 mb-3 mt-6 ml-1 tracking-widest uppercase">【 ${cat.replace(/🥖 |🥯 |🍰 /g, '')} 】</h3>`;
-                }
-                const qty = state.baseOrders[day][i] || 0;
-                total += qty * p.price;
-                picker.innerHTML += `
-                    <div class="bg-gray-50 p-4 rounded-2xl flex items-center justify-between mb-2">
-                        <span class="text-xs font-bold text-slate-600">${p.name}</span>
-                        <div class="flex items-center bg-white rounded-xl p-1 shadow-sm">
-                            <button onclick="changeBaseQty(${day}, ${i}, -1)" class="w-8 h-8 flex items-center justify-center text-[#bfa07a]"><i class="fas fa-minus text-[10px]"></i></button>
-                            <div class="w-10 text-center font-black text-slate-700 text-sm">${qty}</div>
-                            <button onclick="changeBaseQty(${day}, ${i}, 1)" class="w-8 h-8 flex items-center justify-center text-[#bfa07a]"><i class="fas fa-plus text-[10px]"></i></button>
-                        </div>
-                    </div>`;
+                if (p.cat !== cat) { cat = p.cat; picker.innerHTML += `<h3 class="text-[11px] font-black text-slate-300 mb-3 mt-6 ml-1 tracking-widest uppercase">【 ${cat.replace(/🥖 |🥯 |🍰 /g, '')} 】</h3>`; }
+                const qty = state.baseOrders[day][i] || 0; total += qty * p.price;
+                picker.innerHTML += `<div class="bg-gray-50 p-4 rounded-2xl flex items-center justify-between mb-2"><span class="text-xs font-bold text-slate-600">${p.name}</span><div class="flex items-center bg-white rounded-xl p-1 shadow-sm"><button onclick="changeBaseQty(${day}, ${i}, -1)" class="w-8 h-8 flex items-center justify-center text-[#bfa07a]"><i class="fas fa-minus text-[10px]"></i></button><div class="w-10 text-center font-black text-slate-700 text-sm">${qty}</div><button onclick="changeBaseQty(${day}, ${i}, 1)" class="w-8 h-8 flex items-center justify-center text-[#bfa07a]"><i class="fas fa-plus text-[10px]"></i></button></div></div>`;
             });
             document.getElementById('base-total').innerText = '$' + total.toLocaleString();
         }
 
-        function changeBaseQty(day, i, d) {
-            state.baseOrders[day][i] = Math.max(0, (state.baseOrders[day][i] || 0) + d);
-            renderBaseItemPicker();
-        }
-
-        function changeQty(type, i, d) {
-            if(type === 'inventory') state.inventory[i] = Math.max(0, (state.inventory[i] || 0) + d);
-            else if(type === 'factory') state.factory[i] = Math.max(0, (state.factory[i] || 0) + d);
-            else if(type === 'draft') {
-                state.orderDraft[i] = Math.max(0, (state.orderDraft[i] || 0) + d);
-                document.getElementById(`draft-qty-${i}`).innerText = state.orderDraft[i];
-            }
-            render();
-        }
-
-        // 其他功能邏輯保持...
-        function openBaseOrderModal() { document.getElementById('base-order-modal').classList.remove('hidden'); renderBaseItemPicker(); }
-        function closeBaseOrderModal() { document.getElementById('base-order-modal').classList.add('hidden'); render(); }
-        function toggleOtherLoc() { document.getElementById('o-loc-other').classList.toggle('hidden', document.getElementById('o-loc-select').value !== '其他'); }
-        function closeOrderModal() { document.getElementById('order-modal').classList.add('hidden'); }
-        function handleMainAction() { alert('數據鎖定成功，今日結算已存檔。'); }
-
         function renderFactory(container) {
             const tom = new Date(); tom.setDate(tom.getDate()+1);
             if(!state.targetOrderDate) state.targetOrderDate = `${tom.getMonth()+1}/${tom.getDate()}`;
-            const [m, d] = state.targetOrderDate.split('/'); const targetDay = new Date(new Date().getFullYear(), m-1, d).getDay(); const isRegular = [0, 2, 4].includes(targetDay);
-            container.innerHTML = `<div class="bg-slate-800 p-6 rounded-[30px] mb-6 shadow-xl text-white"><div class="flex justify-between mb-4"><span class="text-xs font-bold text-slate-400 italic">下單日期對位</span><div class="bg-red-500 text-[10px] px-2 py-0.5 rounded-full animate-pulse">11:00 截單時限</div></div><div class="grid grid-cols-2 gap-2 mb-4"><select id="f-date-m" onchange="updateTargetDate()" class="bg-slate-700 text-white"></select><select id="f-date-d" onchange="updateTargetDate()" class="bg-slate-700 text-white"></select></div><div class="text-center bg-white/10 p-3 rounded-2xl"><p class="text-[11px] font-black ${isRegular?'text-amber-300':'text-slate-400'}">${state.targetOrderDate} (週${['日','一','二','三','四','五','六'][targetDay]}) ${isRegular?'【出車日】':'【非出車日】'}</p></div></div><div id="factory-list"></div>`;
-            Array.from({length:12},(_,i)=>i+1).forEach(v => document.getElementById('f-date-m').innerHTML += `<option value="${v}" ${v==m?'selected':''}>${v}月</option>`);
-            Array.from({length:31},(_,i)=>i+1).forEach(v => document.getElementById('f-date-d').innerHTML += `<option value="${v}" ${v==d?'selected':''}>${v}日</option>`);
-            renderFactoryItems(document.getElementById('factory-list'), targetDay);
+            const [m, d] = state.targetOrderDate.split('/'); const tDay = new Date(new Date().getFullYear(), m-1, d).getDay(); const isReg = [0, 2, 4].includes(tDay);
+            container.innerHTML = `<div class="bg-slate-800 p-6 rounded-[30px] mb-6 shadow-xl text-white"><div class="flex justify-between mb-4"><span class="text-xs font-bold text-slate-400 italic">叫貨預判對位</span><div class="bg-red-500 text-[10px] px-2 py-0.5 rounded-full animate-pulse">11:00 前截單</div></div><div class="grid grid-cols-2 gap-2 mb-4"><select id="f-date-m" onchange="updateTargetDate()" class="bg-slate-700 text-white"></select><select id="f-date-d" onchange="updateTargetDate()" class="bg-slate-700 text-white"></select></div><div class="text-center bg-white/10 p-3 rounded-2xl"><p class="text-[11px] font-black ${isReg?'text-amber-300':'text-slate-400'}">${state.targetOrderDate} (週${['日','一','二','三','四','五','六'][tDay]}) ${isReg?'【出車日大補貨】':'【僅針對訂單補貨】'}</p></div></div><div id="factory-list"></div>`;
+            const ms = Array.from({length:12},(_,i)=>i+1), ds = Array.from({length:31},(_,i)=>i+1);
+            document.getElementById('f-date-m').innerHTML = ms.map(v=>`<option value="${v}" ${v==m?'selected':''}>${v}月</option>`).join('');
+            document.getElementById('f-date-d').innerHTML = ds.map(v=>`<option value="${v}" ${v==d?'selected':''}>${v}日</option>`).join('');
+            renderFactoryItems(document.getElementById('factory-list'), tDay);
         }
+
         function renderFactoryItems(container, dayOfWeek) {
             let cat = ''; products.forEach((p, i) => {
                 const base = state.baseOrders[dayOfWeek][i] || 0; let oSum = 0; state.orders.forEach(o => { if(o.date === state.targetOrderDate) o.items.forEach(it => { if(it.name === p.name) oSum += it.qty; }); });
-                const inv = state.inventory[i] || 0, suggest = Math.max(0, (base + oSum) - inv);
+                const inv = state.inventory[i] || 0; const suggest = Math.max(0, (base + oSum) - inv);
                 if (p.cat !== cat) { cat = p.cat; container.innerHTML += `<h3 class="text-[11px] font-black text-slate-300 mb-3 mt-8 ml-2 uppercase tracking-widest border-l-4 border-amber-200 pl-2">【 ${cat.replace(/🥖 |🥯 |🍰 /g, '')} 】</h3>`; }
                 container.innerHTML += `<div class="product-card p-4 flex items-center justify-between mb-3 ${suggest>0?'bg-amber-50/20 border-l-4 border-l-amber-400':''}"><div class="flex-1"><div class="font-bold text-slate-700">${p.name}</div><p class="text-[9px] text-slate-400 mt-1">基本:${base}+預定:${oSum}-剩餘:${inv}</p></div><div class="flex items-center bg-white rounded-xl p-1 shadow-inner border border-gray-100"><button onclick="changeQty('factory',${i},-1)" class="stepper-btn"><i class="fas fa-minus text-xs"></i></button><div class="w-12 text-center font-black text-slate-700 text-lg">${state.factory[i] === undefined ? suggest : state.factory[i]}</div><button onclick="changeQty('factory',${i},1)" class="stepper-btn"><i class="fas fa-plus text-xs"></i></button></div></div>`;
                 if(state.factory[i] === undefined) state.factory[i] = suggest;
             });
         }
-        function updateTargetDate() { state.targetOrderDate = `${document.getElementById('f-date-m').value}/${document.getElementById('f-date-d').value}`; state.factory = {}; render(); }
-        function renderRevenue(container) { container.innerHTML = `<div class="space-y-6"><div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm"><div class="flex justify-between items-center mb-4"><h3 class="text-xs font-black text-[#bfa07a] uppercase tracking-widest">當日營收</h3><span class="text-[10px] bg-slate-100 px-2 py-1 rounded font-bold">${state.session.date} @ ${state.session.location}</span></div><div class="grid grid-cols-2 gap-4"><input type="number" id="rev-cash" oninput="saveRev()" placeholder="現金收入" value="${state.revenue.cash||''}" class="bg-gray-50 p-4 rounded-2xl font-bold outline-none"><input type="number" id="rev-lp" oninput="saveRev()" placeholder="LinePay" value="${state.revenue.lp||''}" class="bg-gray-50 p-4 rounded-2xl font-bold outline-none"></div></div><div class="bg-amber-50/30 p-6 rounded-3xl border border-amber-100"><div class="flex justify-between mb-4"><h3 class="text-xs font-black text-amber-600 uppercase">貨款成本</h3><span id="discount-tag" class="text-[10px] font-bold"></span></div><input type="number" id="rev-cost-raw" oninput="saveRev()" placeholder="總原價" value="${state.revenue.costRaw||''}" class="w-full bg-white p-4 rounded-2xl font-black text-amber-700 outline-none border border-amber-100"></div><div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm"><h3 class="text-xs font-black text-red-400 uppercase mb-4">支出明細</h3><div class="grid grid-cols-2 gap-3"><input type="number" id="exp-fuel" oninput="saveRev()" placeholder="加油" value="${state.revenue.fuel||''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none"><input type="number" id="exp-rent" oninput="saveRev()" placeholder="餐車租金" value="${state.revenue.rent||''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none"><input type="number" id="exp-elec" oninput="saveRev()" placeholder="電費" value="${state.revenue.elec||''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none"><input type="number" id="exp-etc" oninput="saveRev()" placeholder="ETC" value="${state.revenue.etc||''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none"><input type="number" id="exp-other" oninput="saveRev()" placeholder="其他" value="${state.revenue.other||''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none col-span-2"></div></div></div>`; saveRev(); }
-        function renderOrders(container) { container.innerHTML = `<button onclick="openOrderModal()" class="w-full bg-[#bfa07a] text-white py-4 rounded-2xl font-bold shadow-lg flex items-center justify-center gap-2 mb-6"><i class="fas fa-plus-circle"></i> 新增預定單</button><div class="space-y-3">${state.orders.length===0?'<p class="text-center text-slate-400 py-10 font-bold italic">目前無訂單紀錄</p>':state.orders.map((o,idx)=>`<div class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm relative"><button onclick="state.orders.splice(${idx},1);render();" class="absolute top-4 right-4 text-slate-200"><i class="fas fa-times text-lg"></i></button><div class="flex justify-between items-start pr-6"><div><span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded-md font-bold italic">${o.date} ${o.time}</span><h4 class="font-black text-slate-700 mt-1 uppercase">${o.name} (${o.phone})</h4></div><span class="text-amber-600 font-black text-lg">$${o.total}</span></div><div class="text-[11px] text-slate-400 my-2 font-bold"><i class="fas fa-map-marker-alt mr-1"></i>${o.location}</div><div class="border-t border-dashed border-gray-100 pt-2 text-[11px] text-slate-500 font-bold">${o.items.map(i=>`${i.name}x${i.qty}`).join('、')}</div></div>`).join('')}</div>`; }
-        function renderAnalysis(container) { container.innerHTML = `<div class="p-8 text-center"><i class="fas fa-chart-pie text-4xl text-slate-200 mb-4"></i><p class="text-slate-400 font-bold italic">營業分析模組正在準備中...<br>累積 3 次結算後開啟數據分析</p></div>`; }
-        function openOrderModal() {
-            state.orderDraft = {}; document.getElementById('order-modal').classList.remove('hidden');
-            const picker = document.getElementById('order-item-picker'); picker.innerHTML = '';
-            let cat = '';
-            products.forEach((p, i) => {
-                if (p.cat !== cat) { cat = p.cat; picker.innerHTML += `<h3 class="text-[10px] font-black text-slate-300 mb-2 mt-4 tracking-widest italic border-b border-gray-100 pb-1">【 ${cat.replace(/🥖 |🥯 |🍰 /g, '')} 】</h3>`; }
-                picker.innerHTML += `<div class="bg-white p-3 rounded-2xl flex items-center justify-between shadow-sm border border-gray-50"><span class="text-xs font-bold text-slate-600">${p.name}</span><div class="flex items-center bg-gray-50 rounded-xl p-1"><button onclick="changeQty('draft',${i},-1)" class="w-8 h-8 flex items-center justify-center text-[#bfa07a]"><i class="fas fa-minus text-[10px]"></i></button><div id="draft-qty-${i}" class="w-8 text-center font-black text-slate-700 text-sm">0</div><button onclick="changeQty('draft',${i},1)" class="w-8 h-8 flex items-center justify-center text-[#bfa07a]"><i class="fas fa-plus text-[10px]"></i></button></div></div>`;
-            });
-            const now = new Date();
-            Array.from({length:12},(_,i)=>i+1).forEach(v => document.getElementById('o-date-m').innerHTML += `<option value="${v}" ${v==now.getMonth()+1?'selected':''}>${v}月</option>`);
-            Array.from({length:31},(_,i)=>i+1).forEach(v => document.getElementById('o-date-d').innerHTML += `<option value="${v}" ${v==now.getDate()?'selected':''}>${v}日</option>`);
-            Array.from({length:24},(_,i)=>i).forEach(v => document.getElementById('o-time-h').innerHTML += `<option value="${v}">${v<10?'0'+v:v}點</option>`);
-            Array.from({length:60},(_,i)=>i).forEach(v => document.getElementById('o-time-m').innerHTML += `<option value="${v}">${v<10?'0'+v:v}分</option>`);
-        }
-        function saveNewOrder() {
-            const its = []; let t = 0; products.forEach((p, i) => { const q = state.orderDraft[i] || 0; if (q > 0) { its.push({ name: p.name, qty: q }); t += p.price * q; } });
-            const selLoc = document.getElementById('o-loc-select').value, finalLoc = selLoc === '其他' ? document.getElementById('o-loc-other').value : selLoc;
-            state.orders.push({ date: `${document.getElementById('o-date-m').value}/${document.getElementById('o-date-d').value}`, time: `${document.getElementById('o-time-h').value}:${document.getElementById('o-time-m').value}`, name: document.getElementById('o-name').value, phone: document.getElementById('o-phone').value, location: finalLoc, items: its, total: t });
-            closeOrderModal(); render();
-        }
-        function saveRev() { if(state.mode !== 'revenue') return; state.revenue = { cash: Number(document.getElementById('rev-cash').value)||0, lp: Number(document.getElementById('rev-lp').value)||0, costRaw: Number(document.getElementById('rev-cost-raw').value)||0, fuel: Number(document.getElementById('exp-fuel').value)||0, rent: Number(document.getElementById('exp-rent').value)||0, elec: Number(document.getElementById('exp-elec').value)||0, etc: Number(document.getElementById('exp-etc').value)||0, other: Number(document.getElementById('exp-other').value)||0 }; updateStat(); }
+
+        // --- 核心邏輯補全 ---
         function updateStat() {
             const val = document.getElementById('stat-value'), lab = document.getElementById('stat-label');
-            if (state.mode === 'inventory') { let t = 0; products.forEach((p, i) => t += (state.inventory[i] || 0) * p.price); val.innerText = '$' + t.toLocaleString(); lab.innerText = '總值分析'; }
-            else if (state.mode === 'factory') { let q = 0; Object.values(state.factory).forEach(v => q += v); val.innerText = q + ' 件'; lab.innerText = '建議叫貨量'; }
-            else if (state.mode === 'revenue') { const disc = state.revenue.costRaw >= 12000 ? 0.5 : 0.55; const net = (state.revenue.cash + state.revenue.lp) - (state.revenue.costRaw * disc) - (state.revenue.fuel + state.revenue.rent + state.revenue.elec + state.revenue.etc + state.revenue.other); val.innerText = '$' + Math.round(net).toLocaleString(); lab.innerText = '預估淨利'; if(document.getElementById('discount-tag')) document.getElementById('discount-tag').innerText = `適用 ${disc*10} 折`; }
+            if (state.mode === 'inventory') { let t = 0; products.forEach((p, i) => t += (state.inventory[i] || 0) * p.price); val.innerText = '$' + t.toLocaleString(); lab.innerText = '盤點資產價值'; }
+            else if (state.mode === 'factory') { let q = 0; Object.values(state.factory).forEach(v => q += v); val.innerText = q + ' 件'; lab.innerText = '預估叫貨量'; }
+            else if (state.mode === 'revenue') { const disc = state.revenue.costRaw >= 12000 ? 0.5 : 0.55; const net = (state.revenue.cash + state.revenue.lp) - (state.revenue.costRaw * disc) - (state.revenue.fuel + state.revenue.rent + state.revenue.elec + state.revenue.etc + state.revenue.other); val.innerText = '$' + Math.round(net).toLocaleString(); lab.innerText = '結算淨獲利'; }
             else if (state.mode === 'orders') { let t = 0; state.orders.forEach(o => t += o.total); val.innerText = '$' + t.toLocaleString(); lab.innerText = '總訂單營業額'; }
+            else if (state.mode === 'analysis') { val.innerText = 'ANALYSIS'; lab.innerText = '大腦運算中'; }
         }
+
+        function openSessionModal() { document.getElementById('session-modal').classList.remove('hidden'); const now = new Date(); document.getElementById('s-date-m').innerHTML = Array.from({length:12},(_,i)=>i+1).map(m=>`<option value="${m}" ${now.getMonth()+1===m?'selected':''}>${m}月</option>`).join(''); document.getElementById('s-date-d').innerHTML = Array.from({length:31},(_,i)=>i+1).map(d=>`<option value="${d}" ${now.getDate()===d?'selected':''}>${d}日</option>`).join(''); }
+        function closeSessionModal() { document.getElementById('session-modal').classList.add('hidden'); switchMode('orders'); }
+        function confirmSession() { const m = document.getElementById('s-date-m').value, d = document.getElementById('s-date-d').value; state.session.dayOfWeek = new Date(new Date().getFullYear(), m-1, d).getDay(); state.session.active = true; state.session.date = `${m}/${d}`; state.session.location = document.getElementById('s-loc').value; document.getElementById('session-modal').classList.add('hidden'); document.getElementById('session-tag').classList.remove('hidden'); switchMode(state.tempMode || 'inventory'); }
+        function changeBaseQty(day, i, d) { state.baseOrders[day][i] = Math.max(0, (state.baseOrders[day][i] || 0) + d); renderBaseItemPicker(); }
+        function changeQty(type, i, d) { if(type === 'inventory') state.inventory[i] = Math.max(0, (state.inventory[i] || 0) + d); else if(type === 'factory') state.factory[i] = Math.max(0, (state.factory[i] || 0) + d); else if(type === 'draft') { state.orderDraft[i] = Math.max(0, (state.orderDraft[i] || 0) + d); document.getElementById(`draft-qty-${i}`).innerText = state.orderDraft[i]; } render(); }
+        function openBaseOrderModal() { document.getElementById('base-order-modal').classList.remove('hidden'); renderBaseItemPicker(); }
+        function closeBaseOrderModal() { document.getElementById('base-order-modal').classList.add('hidden'); render(); }
+        function updateTargetDate() { state.targetOrderDate = `${document.getElementById('f-date-m').value}/${document.getElementById('f-date-d').value}`; state.factory = {}; render(); }
+        function saveRev() { if(state.mode !== 'revenue') return; state.revenue = { cash: Number(document.getElementById('rev-cash').value)||0, lp: Number(document.getElementById('rev-lp').value)||0, costRaw: Number(document.getElementById('rev-cost-raw').value)||0, fuel: Number(document.getElementById('exp-fuel').value)||0, rent: Number(document.getElementById('exp-rent').value)||0, elec: Number(document.getElementById('exp-elec').value)||0, etc: Number(document.getElementById('exp-etc').value)||0, other: Number(document.getElementById('exp-other').value)||0 }; updateStat(); }
+        function renderRevenue(container) { container.innerHTML = `<div class="space-y-6"><div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm"><div class="flex justify-between items-center mb-4"><h3 class="text-xs font-black text-[#bfa07a] uppercase tracking-widest">單日結算</h3><span class="text-[10px] bg-slate-100 px-2 py-1 rounded font-bold italic">${state.session.date} @ ${state.session.location}</span></div><div class="grid grid-cols-2 gap-4"><input type="number" id="rev-cash" oninput="saveRev()" placeholder="現金" value="${state.revenue.cash||''}" class="bg-gray-50 p-4 rounded-2xl font-bold outline-none"><input type="number" id="rev-lp" oninput="saveRev()" placeholder="LinePay" value="${state.revenue.lp||''}" class="bg-gray-50 p-4 rounded-2xl font-bold outline-none"></div></div><div class="bg-amber-50/30 p-6 rounded-3xl border border-amber-100"><div class="flex justify-between mb-4"><h3 class="text-xs font-black text-amber-600 uppercase">貨款成本</h3><span id="discount-tag" class="text-[10px] font-bold"></span></div><input type="number" id="rev-cost-raw" oninput="saveRev()" placeholder="總原價" value="${state.revenue.costRaw||''}" class="w-full bg-white p-4 rounded-2xl font-black text-amber-700 outline-none border border-amber-100"></div><div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm"><h3 class="text-xs font-black text-red-400 uppercase mb-4">支出明細</h3><div class="grid grid-cols-2 gap-3"><input type="number" id="exp-fuel" oninput="saveRev()" placeholder="加油" value="${state.revenue.fuel||''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none"><input type="number" id="exp-rent" oninput="saveRev()" placeholder="餐車租金" value="${state.revenue.rent||''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none"><input type="number" id="exp-elec" oninput="saveRev()" placeholder="電費" value="${state.revenue.elec||''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none"><input type="number" id="exp-etc" oninput="saveRev()" placeholder="ETC" value="${state.revenue.etc||''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none"><input type="number" id="exp-other" oninput="saveRev()" placeholder="雜項" value="${state.revenue.other||''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none col-span-2"></div></div></div>`; saveRev(); }
+        function renderOrders(container) { container.innerHTML = `<button onclick="openOrderModal()" class="w-full bg-[#bfa07a] text-white py-4 rounded-2xl font-bold shadow-lg flex items-center justify-center gap-2 mb-6"><i class="fas fa-plus-circle"></i> 新增預定單</button><div class="space-y-3">${state.orders.length===0?'<p class="text-center text-slate-400 py-10 font-bold italic">目前無訂單紀錄</p>':state.orders.map((o,idx)=>`<div class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm relative"><button onclick="state.orders.splice(${idx},1);render();" class="absolute top-4 right-4 text-slate-200"><i class="fas fa-times text-lg"></i></button><div class="flex justify-between items-start pr-6"><div><span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded-md font-bold italic">${o.date} ${o.time}</span><h4 class="font-black text-slate-700 mt-1 uppercase">${o.name} (${o.phone})</h4></div><span class="text-amber-600 font-black text-lg">$${o.total}</span></div><div class="text-[11px] text-slate-400 my-2 font-bold"><i class="fas fa-map-marker-alt mr-1"></i>${o.location}</div><div class="border-t border-dashed border-gray-100 pt-2 text-[11px] text-slate-500 font-bold">${o.items.map(i=>`${i.name}x${i.qty}`).join('、')}</div></div>`).join('')}</div>`; }
+        function renderAnalysis(container) { container.innerHTML = `<div class="p-8 text-center"><i class="fas fa-brain text-4xl text-slate-200 mb-4"></i><p class="text-slate-400 font-bold italic">營業分析數據正在累積中...<br>請先完成 3 次以上的單日結算</p></div>`; }
+        function openOrderModal() { state.orderDraft = {}; document.getElementById('order-modal').classList.remove('hidden'); const p = document.getElementById('order-item-picker'); p.innerHTML = ''; let cat = ''; products.forEach((prod, i) => { if (prod.cat !== cat) { cat = prod.cat; p.innerHTML += `<h3 class="text-[10px] font-black text-slate-300 mb-2 mt-4 italic border-b border-gray-100 pb-1 uppercase tracking-widest">【 ${cat.replace(/🥖 |🥯 |🍰 /g, '')} 】</h3>`; } p.innerHTML += `<div class="bg-white p-3 rounded-2xl flex items-center justify-between shadow-sm border border-gray-50 mb-2"><span class="text-xs font-bold text-slate-600">${prod.name}</span><div class="flex items-center bg-gray-50 rounded-xl p-1"><button onclick="changeQty('draft',${i},-1)" class="w-8 h-8 flex items-center justify-center text-[#bfa07a]"><i class="fas fa-minus text-[10px]"></i></button><div id="draft-qty-${i}" class="w-8 text-center font-black text-slate-700 text-sm">0</div><button onclick="changeQty('draft',${i},1)" class="w-8 h-8 flex items-center justify-center text-[#bfa07a]"><i class="fas fa-plus text-[10px]"></i></button></div></div>`; }); const now = new Date(); Array.from({length:12},(_,i)=>i+1).forEach(v => document.getElementById('o-date-m').innerHTML += `<option value="${v}" ${v==now.getMonth()+1?'selected':''}>${v}月</option>`); Array.from({length:31},(_,i)=>i+1).forEach(v => document.getElementById('o-date-d').innerHTML += `<option value="${v}" ${v==now.getDate()?'selected':''}>${v}日</option>`); Array.from({length:24},(_,i)=>i).forEach(v => document.getElementById('o-time-h').innerHTML += `<option value="${v}">${v<10?'0'+v:v}點</option>`); Array.from({length:60},(_,i)=>i).forEach(v => document.getElementById('o-time-m').innerHTML += `<option value="${v}">${v<10?'0'+v:v}分</option>`); }
+        function saveNewOrder() { const its = []; let t = 0; products.forEach((p, i) => { const q = state.orderDraft[i] || 0; if (q > 0) { its.push({ name: p.name, qty: q }); t += p.price * q; } }); const selLoc = document.getElementById('o-loc-select').value, finalLoc = selLoc === '其他' ? document.getElementById('o-loc-other').value : selLoc; state.orders.push({ date: `${document.getElementById('o-date-m').value}/${document.getElementById('o-date-d').value}`, time: `${document.getElementById('o-time-h').value}:${document.getElementById('o-time-m').value}`, name: document.getElementById('o-name').value, phone: document.getElementById('o-phone').value, location: finalLoc, items: its, total: t }); closeOrderModal(); render(); }
+        function toggleOtherLoc() { document.getElementById('o-loc-other').classList.toggle('hidden', document.getElementById('o-loc-select').value !== '其他'); }
+        function closeOrderModal() { document.getElementById('order-modal').classList.add('hidden'); }
+        function handleMainAction() { alert('結算成功！數據已存入手機緩存，待串接後將傳回後台。'); }
+        
         switchMode('orders');
     </script>
 </body>
