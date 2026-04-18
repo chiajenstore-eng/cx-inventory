@@ -14,7 +14,8 @@
         .submit-btn { background: linear-gradient(135deg, #bfa07a 0%, #a68a64 100%); box-shadow: 0 10px 20px rgba(191, 160, 122, 0.3); }
         .stepper-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #fff; color: #bfa07a; border: 1px solid #eee; border-radius: 10px; }
         .unit-tag { font-size: 10px; color: #bfa07a; border: 1px solid #bfa07a; padding: 0 4px; border-radius: 4px; margin-left: 6px; }
-        .modal-scroll { max-height: calc(90vh - 250px); overflow-y: auto; }
+        /* iOS風格Select美化 */
+        select { -webkit-appearance: none; appearance: none; background: #f9f9f9; border: none; padding: 12px; border-radius: 15px; font-weight: bold; color: #333; width: 100%; text-align: center; }
     </style>
 </head>
 <body class="pb-32">
@@ -59,21 +60,39 @@
                 <button onclick="closeOrderModal()" class="text-slate-400 text-3xl">&times;</button>
             </div>
             <div class="overflow-y-auto space-y-4 pb-6">
-                <div class="grid grid-cols-2 gap-3">
-                    <input type="date" id="o-date" class="bg-gray-50 p-4 rounded-2xl text-sm outline-none">
-                    <input type="time" id="o-time" class="bg-gray-50 p-4 rounded-2xl text-sm outline-none">
+                <div class="bg-gray-50 p-4 rounded-3xl space-y-3">
+                    <label class="text-[10px] font-black text-slate-400 uppercase ml-1">取餐日期與時間 (24H制)</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <select id="o-date-m"></select>
+                        <select id="o-date-d"></select>
+                        <div class="flex gap-1 col-span-1">
+                            <select id="o-time-h"></select>
+                            <select id="o-time-m"></select>
+                        </div>
+                    </div>
                 </div>
+
                 <div class="grid grid-cols-2 gap-3">
-                    <input type="text" id="o-name" placeholder="客人姓名" class="bg-gray-50 p-4 rounded-2xl text-sm outline-none">
-                    <input type="text" id="o-phone" placeholder="手機末三碼" class="bg-gray-50 p-4 rounded-2xl text-sm outline-none">
+                    <input type="text" id="o-name" placeholder="客人姓名" class="bg-gray-50 p-4 rounded-2xl text-sm outline-none font-bold">
+                    <input type="text" id="o-phone" placeholder="手機末三碼" class="bg-gray-50 p-4 rounded-2xl text-sm outline-none font-bold">
                 </div>
-                <input type="text" id="o-loc" placeholder="取餐地點" class="w-full bg-gray-50 p-4 rounded-2xl text-sm outline-none">
+
+                <div class="space-y-2">
+                    <select id="o-loc-select" onchange="toggleOtherLoc()" class="font-bold">
+                        <option value="嘉北街">📍 嘉北街</option>
+                        <option value="吉品紅豆餅">📍 吉品紅豆餅</option>
+                        <option value="溪口北極殿">📍 溪口北極殿</option>
+                        <option value="中正大學">📍 中正大學</option>
+                        <option value="其他">📍 其他 (手動輸入)</option>
+                    </select>
+                    <input type="text" id="o-loc-other" placeholder="輸入其他取餐地點" class="hidden w-full bg-amber-50 p-4 rounded-2xl text-sm outline-none border border-amber-100 font-bold">
+                </div>
                 
                 <h3 class="font-bold text-slate-700 pt-2 border-t border-gray-100">預定品項</h3>
-                <div id="order-item-picker" class="space-y-1 bg-gray-50 rounded-2xl p-2">
-                    </div>
-                <textarea id="o-note" placeholder="備註..." class="w-full bg-gray-50 p-4 rounded-2xl text-sm outline-none h-20"></textarea>
-                <button onclick="saveNewOrder()" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-bold">確認加入訂單</button>
+                <div id="order-item-picker" class="space-y-1 bg-gray-50 rounded-2xl p-2"></div>
+                
+                <textarea id="o-note" placeholder="備註..." class="w-full bg-gray-50 p-4 rounded-2xl text-sm outline-none h-20 font-bold"></textarea>
+                <button onclick="saveNewOrder()" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-bold text-lg shadow-xl">確認加入訂單</button>
             </div>
         </div>
     </div>
@@ -219,27 +238,15 @@
                             <div><span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded-md font-bold">${o.date} ${o.time}</span><h4 class="font-black text-slate-700 mt-1">${o.name} (${o.phone})</h4></div>
                             <span class="text-amber-600 font-black text-lg">$${o.total}</span>
                         </div>
-                        <div class="text-[11px] text-slate-400 my-2"><i class="fas fa-map-marker-alt mr-1"></i>${o.location}</div>
-                        <div class="border-t border-dashed border-gray-100 pt-2 text-xs text-slate-500">${o.items.map(i=>`${i.name}x${i.qty}`).join('、')}</div>
+                        <div class="text-[11px] text-slate-400 my-2 font-bold"><i class="fas fa-map-marker-alt mr-1"></i>${o.location}</div>
+                        <div class="border-t border-dashed border-gray-100 pt-2 text-xs text-slate-500 font-bold">${o.items.map(i=>`${i.name}x${i.qty}`).join('、')}</div>
                         ${o.note?`<div class="mt-2 text-[10px] bg-amber-50 text-amber-600 p-2 rounded-lg">備註：${o.note}</div>`:''}
                     </div>`).join('')}</div>`;
         }
 
-        function changeQty(i, d) {
-            const data = state.mode === 'inventory' ? state.inventory : state.factory;
-            data[i] = Math.max(0, (data[i] || 0) + d);
-            render();
-        }
-
-        function saveRev() {
-            if(state.mode !== 'revenue') return;
-            state.revenue = {
-                cash: Number(document.getElementById('rev-cash').value)||0, lp: Number(document.getElementById('rev-lp').value)||0,
-                costRaw: Number(document.getElementById('rev-cost-raw').value)||0, fuel: Number(document.getElementById('exp-fuel').value)||0,
-                rent: Number(document.getElementById('exp-rent').value)||0, elec: Number(document.getElementById('exp-elec').value)||0,
-                etc: Number(document.getElementById('exp-etc').value)||0, other: Number(document.getElementById('exp-other').value)||0
-            };
-            updateStat();
+        function toggleOtherLoc() {
+            const val = document.getElementById('o-loc-select').value;
+            document.getElementById('o-loc-other').classList.toggle('hidden', val !== '其他');
         }
 
         function updateStat() {
@@ -249,14 +256,15 @@
                 val.innerText = '$' + t.toLocaleString(); lab.innerText = '庫存價值';
             } else if (state.mode === 'factory') {
                 let q = 0; Object.values(state.factory).forEach(v => q += v);
-                // 自動疊加預訂單數量
                 state.orders.forEach(o => o.items.forEach(i => q += i.qty));
                 val.innerText = q + ' 件'; lab.innerText = '叫貨總數(含預訂)';
             } else if (state.mode === 'revenue') {
                 const disc = state.revenue.costRaw >= 12000 ? 0.5 : 0.55;
                 const net = (state.revenue.cash + state.revenue.lp) - (state.revenue.costRaw * disc) - (Object.values(state.revenue).reduce((a,b)=>a+b,0) - state.revenue.cash - state.revenue.lp - state.revenue.costRaw);
                 val.innerText = '$' + Math.round(net).toLocaleString(); lab.innerText = '預估淨利';
-                if(document.getElementById('discount-tag')) document.getElementById('discount-tag').innerText = `適用 ${disc*10} 折`;
+            } else if (state.mode === 'orders') {
+                let t = 0; state.orders.forEach(o => t += o.total);
+                val.innerText = '$' + t.toLocaleString(); lab.innerText = '今日訂單營業額';
             }
         }
 
@@ -268,6 +276,18 @@
                     <span class="text-xs font-bold text-slate-600">${prod.name}</span>
                     <input type="number" id="pick-${i}" placeholder="0" class="w-12 text-center border-b border-amber-200 outline-none font-bold bg-transparent text-sm">
                 </div>`).join('');
+            
+            // 初始化iOS Style日期時間
+            const now = new Date();
+            const months = Array.from({length:12}, (_,i)=>i+1);
+            const days = Array.from({length:31}, (_,i)=>i+1);
+            const hours = Array.from({length:24}, (_,i)=>(i<10?'0':'')+i);
+            const mins = Array.from({length:60}, (_,i)=>(i<10?'0':'')+i);
+
+            document.getElementById('o-date-m').innerHTML = months.map(m=>`<option value="${m}" ${now.getMonth()+1===m?'selected':''}>${m}月</option>`).join('');
+            document.getElementById('o-date-d').innerHTML = days.map(d=>`<option value="${d}" ${now.getDate()===d?'selected':''}>${d}日</option>`).join('');
+            document.getElementById('o-time-h').innerHTML = hours.map(h=>`<option value="${h}" ${now.getHours()==h?'selected':''}>${h}點</option>`).join('');
+            document.getElementById('o-time-m').innerHTML = mins.map(m=>`<option value="${m}" ${Math.floor(now.getMinutes()/5)*5==m?'selected':''}>${m}分</option>`).join('');
         }
 
         function saveNewOrder() {
@@ -276,18 +296,36 @@
                 const q = Number(document.getElementById(`pick-${i}`).value) || 0;
                 if (q > 0) { its.push({ name: p.name, qty: q }); t += p.price * q; }
             });
+            const selLoc = document.getElementById('o-loc-select').value;
+            const finalLoc = selLoc === '其他' ? document.getElementById('o-loc-other').value : selLoc;
+            
             state.orders.push({
-                date: document.getElementById('o-date').value, time: document.getElementById('o-time').value,
+                date: `${document.getElementById('o-date-m').value}/${document.getElementById('o-date-d').value}`,
+                time: `${document.getElementById('o-time-h').value}:${document.getElementById('o-time-m').value}`,
                 name: document.getElementById('o-name').value, phone: document.getElementById('o-phone').value,
-                location: document.getElementById('o-loc').value, note: document.getElementById('o-note').value,
+                location: finalLoc, note: document.getElementById('o-note').value,
                 items: its, total: t
             });
             closeOrderModal(); render();
         }
 
         function closeOrderModal() { document.getElementById('order-modal').classList.add('hidden'); }
-        function handleMainAction() { alert('數據儲存成功！已連動叫貨系統。'); }
-        
+        function handleMainAction() { alert('數據儲存成功！'); }
+        function saveRev() {
+            if(state.mode !== 'revenue') return;
+            state.revenue = {
+                cash: Number(document.getElementById('rev-cash').value)||0, lp: Number(document.getElementById('rev-lp').value)||0,
+                costRaw: Number(document.getElementById('rev-cost-raw').value)||0, fuel: Number(document.getElementById('exp-fuel').value)||0,
+                rent: Number(document.getElementById('exp-rent').value)||0, elec: Number(document.getElementById('exp-elec').value)||0,
+                etc: Number(document.getElementById('exp-etc').value)||0, other: Number(document.getElementById('exp-other').value)||0
+            };
+            updateStat();
+        }
+        function changeQty(i, d) {
+            const data = state.mode === 'inventory' ? state.inventory : state.factory;
+            data[i] = Math.max(0, (data[i] || 0) + d);
+            render();
+        }
         switchMode('inventory');
     </script>
 </body>
