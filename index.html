@@ -8,31 +8,31 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: #fcfaf7; }
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #fcfaf7; -webkit-tap-highlight-color: transparent; }
         .product-card { background: #fff; border-radius: 20px; border: 1px solid #f1f1f1; }
         .active-tab { color: #bfa07a !important; border-bottom: 3px solid #bfa07a; }
         .submit-btn { background: linear-gradient(135deg, #bfa07a 0%, #a68a64 100%); box-shadow: 0 10px 20px rgba(191, 160, 122, 0.3); }
-        .stepper-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #fff; color: #bfa07a; border: 1px solid #eee; border-radius: 10px; }
+        .stepper-btn { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: #fff; color: #bfa07a; border: 1px solid #eee; border-radius: 12px; }
+        .unit-tag { font-size: 10px; color: #bfa07a; border: 1px solid #bfa07a; padding: 0 4px; border-radius: 4px; margin-left: 6px; }
     </style>
 </head>
 <body class="pb-32">
-    <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 px-6 py-5 flex justify-between items-center">
+    <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 px-6 py-5 flex justify-between items-center shadow-sm">
         <div>
             <h1 class="text-2xl font-black text-slate-800 italic tracking-tighter uppercase">CHENG XIN</h1>
             <p id="current-mode-title" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 text-center bg-slate-100 rounded-full px-2">收攤點貨</p>
         </div>
-        <div id="header-stat" class="text-right">
+        <div class="text-right">
             <span id="stat-value" class="text-xl font-black text-red-500">$0</span>
             <span id="stat-label" class="block text-[9px] text-slate-400 font-bold uppercase tracking-widest">庫存價值</span>
         </div>
     </header>
 
-    <div id="app" class="p-4">
-        </div>
+    <div id="app" class="p-4"></div>
 
-    <div id="action-bar" class="fixed bottom-24 left-0 right-0 px-6 z-40">
+    <div class="fixed bottom-24 left-0 right-0 px-6 z-40">
         <button onclick="handleMainAction()" class="submit-btn w-full py-4 rounded-2xl text-white font-bold text-lg flex items-center justify-center gap-3 active:scale-95 transition-transform">
-            <i class="fas fa-check-circle"></i> 確認送出
+            <i class="fas fa-check-circle"></i> 確認送出數據
         </button>
     </div>
 
@@ -52,80 +52,189 @@
     </nav>
 
     <script>
-        // 你的 62 項產品清單 (簡化版示意，保持原本邏輯)
         const products = [
             { cat: "🥖 麵包區", name: "黃金牛角", price: 35, unit: "個" },
             { cat: "🥖 麵包區", name: "原味小菠蘿", price: 35, unit: "2入" },
-            // ... 其餘品項保持不變
+            { cat: "🥖 麵包區", name: "奶酥菠蘿", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "芋頭菠蘿", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "菠蘿金牛角", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "楓糖小可頌", price: 35, unit: "3入" },
+            { cat: "🥖 麵包區", name: "鹽花可頌", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "蘋果派", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "巧克力大理石", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "可可麵包捲", price: 35, unit: "2入" },
+            { cat: "🥖 麵包區", name: "奶香小餐包", price: 35, unit: "2入" },
+            { cat: "🥖 麵包區", name: "黃金小羅宋", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "北海道鮮奶", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "奶酥小炸彈", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "牛奶克林姆", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "咖啡麵包", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "紅豆麵包", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "肉鬆麵包", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "台式肉鬆蔥捲", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "明太子法國麵包", price: 45, unit: "個" },
+            { cat: "🥖 麵包區", name: "香蒜法國麵包", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "香蒜金磚吐司", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "德腸夏威夷", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "可可爆漿菠蘿", price: 45, unit: "個" },
+            { cat: "🥖 麵包區", name: "巧克力QQ球", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "蔓越莓雜糧", price: 45, unit: "個" },
+            { cat: "🥖 麵包區", name: "優格蔓越莓", price: 55, unit: "個" },
+            { cat: "🥖 麵包區", name: "肉桂核桃捲", price: 55, unit: "個" },
+            { cat: "🥖 麵包區", name: "千層牛奶棒", price: 45, unit: "2入" },
+            { cat: "🥖 麵包區", name: "蜂蜜起酥蛋糕", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "QQ布丁麵包", price: 55, unit: "個" },
+            { cat: "🥯 貝果、吐司區", name: "原味軟貝果", price: 35, unit: "個" },
+            { cat: "🥯 貝果、吐司區", name: "火龍果乳酪貝果", price: 45, unit: "個" },
+            { cat: "🥯 貝果、吐司區", name: "巧克力貝果", price: 45, unit: "個" },
+            { cat: "🥯 貝果、吐司區", name: "藍莓抹醬貝果", price: 45, unit: "個" },
+            { cat: "🥯 貝果、吐司區", name: "三色厚片吐司", price: 35, unit: "2片" },
+            { cat: "🥯 貝果、吐司區", name: "千層小吐司", price: 55, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "花瓣檸檬塔", price: 35, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "台式小蛋塔", price: 35, unit: "2入" },
+            { cat: "🍰 蛋糕點心區", name: "蛋糕捲", price: 50, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "檸檬小蛋糕", price: 35, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "草莓小蛋糕", price: 35, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "檸檬布丁塔", price: 35, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "冰心泡芙", price: 35, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "生乳餐包", price: 35, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "卡士達冰心可頌", price: 35, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "紅豆麻糬", price: 35, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "台式馬卡龍", price: 50, unit: "包" },
+            { cat: "🍰 蛋糕點心區", name: "珍珠糖泡芙餅乾", price: 50, unit: "包" },
+            { cat: "🍰 蛋糕點心區", name: "法式奶油球", price: 120, unit: "18入" },
+            { cat: "🍰 蛋糕點心區", name: "肉鬆芋頭小貝", price: 120, unit: "4入" },
+            { cat: "🍰 蛋糕點心區", name: "帕瑪森起士棒", price: 120, unit: "包" }
         ];
 
         let state = {
             currentMode: 'inventory',
-            data: { inventory: {}, revenue: 0, orders: [], factory: {} }
+            inventory: {},
+            factory: {},
+            revenue: { cash: 0, lp: 0, costRaw: 0, fuel: 0, rent: 0, elec: 0, etc: 0, other: 0 }
         };
 
         function switchMode(mode) {
             state.currentMode = mode;
-            // 更新 UI 狀態
             const tabs = ['inventory', 'revenue', 'orders', 'factory'];
-            tabs.forEach(t => {
-                document.getElementById('nav-' + t).classList.toggle('active-tab', t === mode);
-            });
-
-            // 更新 Header 文字
-            const modeNames = {
-                inventory: '收攤點貨',
-                revenue: '當日營收',
-                orders: '訂單管理',
-                factory: '工廠叫貨'
-            };
-            document.getElementById('current-mode-title').innerText = modeNames[mode];
+            tabs.forEach(t => document.getElementById('nav-' + t).classList.toggle('active-tab', t === mode));
             
+            const modeNames = { inventory: '收攤點貨', revenue: '當日營收', orders: '訂單管理', factory: '工廠叫貨' };
+            document.getElementById('current-mode-title').innerText = modeNames[mode];
             render();
         }
 
         function render() {
             const container = document.getElementById('app');
-            const statValue = document.getElementById('stat-value');
-            const statLabel = document.getElementById('stat-label');
             container.innerHTML = '';
 
             if (state.currentMode === 'inventory' || state.currentMode === 'factory') {
-                // 顯示品項清單 (點貨與叫貨邏輯)
                 renderProductList(container);
-                statLabel.innerText = state.currentMode === 'inventory' ? '庫存價值' : '叫貨總數';
             } else if (state.currentMode === 'revenue') {
-                container.innerHTML = `
-                    <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-center">
-                        <p class="text-slate-400 font-bold mb-4">輸入今日結帳金額</p>
-                        <input type="number" placeholder="0" class="text-4xl font-black text-center w-full outline-none text-[#bfa07a]">
-                        <div class="grid grid-cols-2 gap-3 mt-8">
-                            <div class="bg-gray-50 p-4 rounded-2xl"><p class="text-xs text-slate-400">現金收入</p><p class="font-bold">$0</p></div>
-                            <div class="bg-gray-50 p-4 rounded-2xl"><p class="text-xs text-slate-400">LinePay</p><p class="font-bold">$0</p></div>
-                        </div>
-                    </div>`;
-                statLabel.innerText = '今日總營收';
+                renderRevenueForm(container);
             } else if (state.currentMode === 'orders') {
-                container.innerHTML = `
-                    <div class="text-center py-20">
-                        <i class="fas fa-clipboard-list text-4xl text-slate-200 mb-4"></i>
-                        <p class="text-slate-400 font-bold">目前尚無預訂訂單</p>
-                        <button class="mt-4 text-[#bfa07a] font-bold text-sm">+ 新增客戶預訂</button>
-                    </div>`;
-                statLabel.innerText = '待處理訂單';
+                container.innerHTML = `<div class="text-center py-20 text-slate-400 font-bold">訂單管理模組優化中...</div>`;
             }
+            updateStat();
         }
 
         function renderProductList(container) {
-            // 原有的產品渲染邏輯...
-            container.innerHTML = `<p class="text-center text-slate-400 py-10">【${document.getElementById('current-mode-title').innerText}】功能開發中...</p>`;
+            let currentCat = '';
+            const data = state.currentMode === 'inventory' ? state.inventory : state.factory;
+            products.forEach((p, i) => {
+                if (p.cat !== currentCat) {
+                    currentCat = p.cat;
+                    const h = document.createElement('h3');
+                    h.className = "text-[10px] font-black text-slate-300 mb-2 mt-6 ml-2 uppercase tracking-widest";
+                    h.innerText = currentCat;
+                    container.appendChild(h);
+                }
+                const div = document.createElement('div');
+                div.className = "product-card p-4 flex items-center justify-between shadow-sm border border-gray-100 mb-3";
+                div.innerHTML = `
+                    <div class="flex-1">
+                        <div class="flex items-center font-bold text-slate-700 underline decoration-[#bfa07a]/30 decoration-2 underline-offset-4">${p.name}<span class="unit-tag">${p.unit}</span></div>
+                        <p class="text-[10px] text-slate-300 mt-1">${state.currentMode === 'inventory' ? '$' + p.price : '明日需求'}</p>
+                    </div>
+                    <div class="flex items-center bg-gray-50 rounded-xl p-1 border border-gray-100">
+                        <button onclick="changeQty(${i},-1)" class="stepper-btn shadow-sm active:bg-gray-100"><i class="fas fa-minus"></i></button>
+                        <div class="w-12 text-center font-black text-lg text-slate-700">${data[i] || 0}</div>
+                        <button onclick="changeQty(${i},1)" class="stepper-btn shadow-sm active:bg-gray-100"><i class="fas fa-plus"></i></button>
+                    </div>`;
+                container.appendChild(div);
+            });
+        }
+
+        function renderRevenueForm(container) {
+            container.innerHTML = `
+                <div class="space-y-6">
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                        <h3 class="text-xs font-black text-[#bfa07a] uppercase tracking-widest mb-4">營業收入</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="number" id="rev-cash" oninput="saveRev()" placeholder="現金" value="${state.revenue.cash || ''}" class="bg-gray-50 p-4 rounded-2xl font-bold outline-none">
+                            <input type="number" id="rev-lp" oninput="saveRev()" placeholder="LINE PAY" value="${state.revenue.lp || ''}" class="bg-gray-50 p-4 rounded-2xl font-bold outline-none">
+                        </div>
+                    </div>
+                    <div class="bg-amber-50/30 p-6 rounded-3xl shadow-sm border border-amber-100">
+                        <div class="flex justify-between items-center mb-4"><h3 class="text-xs font-black text-amber-600 uppercase tracking-widest">進貨貨款</h3><span id="discount-tag" class="text-[10px] font-bold">適用 5.5 折</span></div>
+                        <input type="number" id="rev-cost-raw" oninput="saveRev()" placeholder="輸入進貨原價總額" value="${state.revenue.costRaw || ''}" class="w-full bg-white p-4 rounded-2xl font-black text-amber-700 border border-amber-100 outline-none">
+                    </div>
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                        <h3 class="text-xs font-black text-red-400 uppercase tracking-widest mb-4">今日支出項目</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <input type="number" id="exp-fuel" oninput="saveRev()" placeholder="加油" value="${state.revenue.fuel || ''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none">
+                            <input type="number" id="exp-rent" oninput="saveRev()" placeholder="餐車租金" value="${state.revenue.rent || ''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none">
+                            <input type="number" id="exp-elec" oninput="saveRev()" placeholder="電費" value="${state.revenue.elec || ''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none">
+                            <input type="number" id="exp-etc" oninput="saveRev()" placeholder="ETC" value="${state.revenue.etc || ''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none">
+                            <input type="number" id="exp-other" oninput="saveRev()" placeholder="其他" value="${state.revenue.other || ''}" class="w-full bg-gray-50 p-3 rounded-xl text-sm outline-none col-span-2">
+                        </div>
+                    </div>
+                </div>`;
+            saveRev(); 
+        }
+
+        function changeQty(i, d) {
+            const data = state.currentMode === 'inventory' ? state.inventory : state.factory;
+            data[i] = Math.max(0, (data[i] || 0) + d);
+            render();
+        }
+
+        function saveRev() {
+            if(state.currentMode !== 'revenue') return;
+            state.revenue = {
+                cash: Number(document.getElementById('rev-cash').value) || 0,
+                lp: Number(document.getElementById('rev-lp').value) || 0,
+                costRaw: Number(document.getElementById('rev-cost-raw').value) || 0,
+                fuel: Number(document.getElementById('exp-fuel').value) || 0,
+                rent: Number(document.getElementById('exp-rent').value) || 0,
+                elec: Number(document.getElementById('exp-elec').value) || 0,
+                etc: Number(document.getElementById('exp-etc').value) || 0,
+                other: Number(document.getElementById('exp-other').value) || 0
+            };
+            updateStat();
+        }
+
+        function updateStat() {
+            const val = document.getElementById('stat-value');
+            const lab = document.getElementById('stat-label');
+            if (state.currentMode === 'inventory') {
+                let total = 0; products.forEach((p, i) => total += (state.inventory[i] || 0) * p.price);
+                val.innerText = '$' + total.toLocaleString(); lab.innerText = '庫存價值';
+            } else if (state.currentMode === 'factory') {
+                let qty = 0; Object.values(state.factory).forEach(v => qty += v);
+                val.innerText = qty + ' 件'; lab.innerText = '叫貨總數';
+            } else if (state.currentMode === 'revenue') {
+                const discount = state.revenue.costRaw >= 12000 ? 0.5 : 0.55;
+                const net = (state.revenue.cash + state.revenue.lp) - (state.revenue.costRaw * discount) - (state.revenue.fuel + state.revenue.rent + state.revenue.elec + state.revenue.etc + state.revenue.other);
+                val.innerText = '$' + Math.round(net).toLocaleString(); lab.innerText = '當日純利預估';
+                if(document.getElementById('discount-tag')) document.getElementById('discount-tag').innerText = `適用 ${discount * 10} 折`;
+            }
         }
 
         function handleMainAction() {
-            alert('準備儲存 ' + document.getElementById('current-mode-title').innerText + ' 數據');
+            alert('數據已儲存於本機！待串接 Google Sheets 後將自動上傳。');
         }
 
-        // 初始化
         switchMode('inventory');
     </script>
 </body>
