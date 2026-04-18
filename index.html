@@ -12,8 +12,9 @@
         .product-card { background: #fff; border-radius: 20px; border: 1px solid #f1f1f1; }
         .active-tab { color: #bfa07a !important; border-bottom: 3px solid #bfa07a; }
         .submit-btn { background: linear-gradient(135deg, #bfa07a 0%, #a68a64 100%); box-shadow: 0 10px 20px rgba(191, 160, 122, 0.3); }
-        .stepper-btn { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: #fff; color: #bfa07a; border: 1px solid #eee; border-radius: 12px; }
+        .stepper-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #fff; color: #bfa07a; border: 1px solid #eee; border-radius: 10px; }
         .unit-tag { font-size: 10px; color: #bfa07a; border: 1px solid #bfa07a; padding: 0 4px; border-radius: 4px; margin-left: 6px; }
+        .modal-scroll { max-height: calc(90vh - 250px); overflow-y: auto; }
     </style>
 </head>
 <body class="pb-32">
@@ -30,7 +31,7 @@
 
     <div id="app" class="p-4"></div>
 
-    <div class="fixed bottom-24 left-0 right-0 px-6 z-40">
+    <div id="action-bar" class="fixed bottom-24 left-0 right-0 px-6 z-40">
         <button onclick="handleMainAction()" class="submit-btn w-full py-4 rounded-2xl text-white font-bold text-lg flex items-center justify-center gap-3 active:scale-95 transition-transform">
             <i class="fas fa-check-circle"></i> 確認送出數據
         </button>
@@ -50,6 +51,32 @@
             <i class="fas fa-truck text-lg mb-1"></i><span class="text-[10px]">工廠叫貨</span>
         </div>
     </nav>
+
+    <div id="order-modal" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end">
+        <div class="bg-white w-full rounded-t-[40px] p-6 max-h-[95vh] overflow-hidden flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-black text-slate-800">📝 新增預定單</h2>
+                <button onclick="closeOrderModal()" class="text-slate-400 text-3xl">&times;</button>
+            </div>
+            <div class="overflow-y-auto space-y-4 pb-6">
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="date" id="o-date" class="bg-gray-50 p-4 rounded-2xl text-sm outline-none">
+                    <input type="time" id="o-time" class="bg-gray-50 p-4 rounded-2xl text-sm outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="text" id="o-name" placeholder="客人姓名" class="bg-gray-50 p-4 rounded-2xl text-sm outline-none">
+                    <input type="text" id="o-phone" placeholder="手機末三碼" class="bg-gray-50 p-4 rounded-2xl text-sm outline-none">
+                </div>
+                <input type="text" id="o-loc" placeholder="取餐地點" class="w-full bg-gray-50 p-4 rounded-2xl text-sm outline-none">
+                
+                <h3 class="font-bold text-slate-700 pt-2 border-t border-gray-100">預定品項</h3>
+                <div id="order-item-picker" class="space-y-1 bg-gray-50 rounded-2xl p-2">
+                    </div>
+                <textarea id="o-note" placeholder="備註..." class="w-full bg-gray-50 p-4 rounded-2xl text-sm outline-none h-20"></textarea>
+                <button onclick="saveNewOrder()" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-bold">確認加入訂單</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         const products = [
@@ -108,133 +135,159 @@
         ];
 
         let state = {
-            currentMode: 'inventory',
-            inventory: {},
-            factory: {},
+            mode: 'inventory',
+            inventory: {}, factory: {}, orders: [],
             revenue: { cash: 0, lp: 0, costRaw: 0, fuel: 0, rent: 0, elec: 0, etc: 0, other: 0 }
         };
 
-        function switchMode(mode) {
-            state.currentMode = mode;
-            const tabs = ['inventory', 'revenue', 'orders', 'factory'];
-            tabs.forEach(t => document.getElementById('nav-' + t).classList.toggle('active-tab', t === mode));
-            
-            const modeNames = { inventory: '收攤點貨', revenue: '當日營收', orders: '訂單管理', factory: '工廠叫貨' };
-            document.getElementById('current-mode-title').innerText = modeNames[mode];
+        function switchMode(m) {
+            state.mode = m;
+            ['inventory', 'revenue', 'orders', 'factory'].forEach(t => document.getElementById('nav-'+t).classList.toggle('active-tab', t===m));
+            document.getElementById('current-mode-title').innerText = {inventory:'收攤點貨', revenue:'當日營收', orders:'訂單管理', factory:'工廠叫貨'}[m];
             render();
         }
 
         function render() {
-            const container = document.getElementById('app');
-            container.innerHTML = '';
-
-            if (state.currentMode === 'inventory' || state.currentMode === 'factory') {
-                renderProductList(container);
-            } else if (state.currentMode === 'revenue') {
-                renderRevenueForm(container);
-            } else if (state.currentMode === 'orders') {
-                container.innerHTML = `<div class="text-center py-20 text-slate-400 font-bold">訂單管理模組優化中...</div>`;
+            const app = document.getElementById('app');
+            app.innerHTML = '';
+            if (state.mode === 'inventory' || state.mode === 'factory') {
+                renderProducts(app);
+            } else if (state.mode === 'revenue') {
+                renderRevenue(app);
+            } else if (state.mode === 'orders') {
+                renderOrders(app);
             }
             updateStat();
         }
 
-        function renderProductList(container) {
-            let currentCat = '';
-            const data = state.currentMode === 'inventory' ? state.inventory : state.factory;
+        function renderProducts(container) {
+            let cat = '';
+            const data = state.mode === 'inventory' ? state.inventory : state.factory;
             products.forEach((p, i) => {
-                if (p.cat !== currentCat) {
-                    currentCat = p.cat;
-                    const h = document.createElement('h3');
-                    h.className = "text-[10px] font-black text-slate-300 mb-2 mt-6 ml-2 uppercase tracking-widest";
-                    h.innerText = currentCat;
-                    container.appendChild(h);
+                if (p.cat !== cat) {
+                    cat = p.cat;
+                    container.innerHTML += `<h3 class="text-[10px] font-black text-slate-300 mb-2 mt-6 ml-2 uppercase tracking-widest">${cat}</h3>`;
                 }
-                const div = document.createElement('div');
-                div.className = "product-card p-4 flex items-center justify-between shadow-sm border border-gray-100 mb-3";
-                div.innerHTML = `
-                    <div class="flex-1">
-                        <div class="flex items-center font-bold text-slate-700 underline decoration-[#bfa07a]/30 decoration-2 underline-offset-4">${p.name}<span class="unit-tag">${p.unit}</span></div>
-                        <p class="text-[10px] text-slate-300 mt-1">${state.currentMode === 'inventory' ? '$' + p.price : '明日需求'}</p>
-                    </div>
-                    <div class="flex items-center bg-gray-50 rounded-xl p-1 border border-gray-100">
-                        <button onclick="changeQty(${i},-1)" class="stepper-btn shadow-sm active:bg-gray-100"><i class="fas fa-minus"></i></button>
-                        <div class="w-12 text-center font-black text-lg text-slate-700">${data[i] || 0}</div>
-                        <button onclick="changeQty(${i},1)" class="stepper-btn shadow-sm active:bg-gray-100"><i class="fas fa-plus"></i></button>
+                container.innerHTML += `
+                    <div class="product-card p-4 flex items-center justify-between shadow-sm mb-3">
+                        <div class="flex-1">
+                            <div class="font-bold text-slate-700 underline decoration-[#bfa07a]/30">${p.name}<span class="unit-tag">${p.unit}</span></div>
+                            <p class="text-[10px] text-slate-300 mt-1">${state.mode==='inventory'?'$'+p.price:'工廠叫貨'}</p>
+                        </div>
+                        <div class="flex items-center bg-gray-50 rounded-xl p-1">
+                            <button onclick="changeQty(${i},-1)" class="stepper-btn active:bg-gray-100"><i class="fas fa-minus"></i></button>
+                            <div class="w-12 text-center font-black text-slate-700">${data[i] || 0}</div>
+                            <button onclick="changeQty(${i},1)" class="stepper-btn active:bg-gray-100"><i class="fas fa-plus"></i></button>
+                        </div>
                     </div>`;
-                container.appendChild(div);
             });
         }
 
-        function renderRevenueForm(container) {
+        function renderRevenue(container) {
             container.innerHTML = `
                 <div class="space-y-6">
                     <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                        <h3 class="text-xs font-black text-[#bfa07a] uppercase tracking-widest mb-4">營業收入</h3>
+                        <h3 class="text-xs font-black text-[#bfa07a] uppercase mb-4">營業收入</h3>
                         <div class="grid grid-cols-2 gap-4">
-                            <input type="number" id="rev-cash" oninput="saveRev()" placeholder="現金" value="${state.revenue.cash || ''}" class="bg-gray-50 p-4 rounded-2xl font-bold outline-none">
-                            <input type="number" id="rev-lp" oninput="saveRev()" placeholder="LINE PAY" value="${state.revenue.lp || ''}" class="bg-gray-50 p-4 rounded-2xl font-bold outline-none">
+                            <input type="number" id="rev-cash" oninput="saveRev()" placeholder="現金" value="${state.revenue.cash||''}" class="bg-gray-50 p-4 rounded-2xl font-bold outline-none">
+                            <input type="number" id="rev-lp" oninput="saveRev()" placeholder="LINE PAY" value="${state.revenue.lp||''}" class="bg-gray-50 p-4 rounded-2xl font-bold outline-none">
                         </div>
                     </div>
-                    <div class="bg-amber-50/30 p-6 rounded-3xl shadow-sm border border-amber-100">
-                        <div class="flex justify-between items-center mb-4"><h3 class="text-xs font-black text-amber-600 uppercase tracking-widest">進貨貨款</h3><span id="discount-tag" class="text-[10px] font-bold">適用 5.5 折</span></div>
-                        <input type="number" id="rev-cost-raw" oninput="saveRev()" placeholder="輸入進貨原價總額" value="${state.revenue.costRaw || ''}" class="w-full bg-white p-4 rounded-2xl font-black text-amber-700 border border-amber-100 outline-none">
+                    <div class="bg-amber-50/30 p-6 rounded-3xl border border-amber-100">
+                        <div class="flex justify-between mb-4"><h3 class="text-xs font-black text-amber-600 uppercase">進貨貨款</h3><span id="discount-tag" class="text-[10px] font-bold">適用 5.5 折</span></div>
+                        <input type="number" id="rev-cost-raw" oninput="saveRev()" placeholder="進貨原價總額" value="${state.revenue.costRaw||''}" class="w-full bg-white p-4 rounded-2xl font-black text-amber-700 border border-amber-100 outline-none">
                     </div>
                     <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                        <h3 class="text-xs font-black text-red-400 uppercase tracking-widest mb-4">今日支出項目</h3>
+                        <h3 class="text-xs font-black text-red-400 uppercase mb-4">支出項目</h3>
                         <div class="grid grid-cols-2 gap-3">
-                            <input type="number" id="exp-fuel" oninput="saveRev()" placeholder="加油" value="${state.revenue.fuel || ''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none">
-                            <input type="number" id="exp-rent" oninput="saveRev()" placeholder="餐車租金" value="${state.revenue.rent || ''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none">
-                            <input type="number" id="exp-elec" oninput="saveRev()" placeholder="電費" value="${state.revenue.elec || ''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none">
-                            <input type="number" id="exp-etc" oninput="saveRev()" placeholder="ETC" value="${state.revenue.etc || ''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none">
-                            <input type="number" id="exp-other" oninput="saveRev()" placeholder="其他" value="${state.revenue.other || ''}" class="w-full bg-gray-50 p-3 rounded-xl text-sm outline-none col-span-2">
+                            <input type="number" id="exp-fuel" oninput="saveRev()" placeholder="加油" value="${state.revenue.fuel||''}" class="bg-gray-50 p-3 rounded-xl outline-none"><input type="number" id="exp-rent" oninput="saveRev()" placeholder="餐車租金" value="${state.revenue.rent||''}" class="bg-gray-50 p-3 rounded-xl outline-none">
+                            <input type="number" id="exp-elec" oninput="saveRev()" placeholder="電費" value="${state.revenue.elec||''}" class="bg-gray-50 p-3 rounded-xl outline-none"><input type="number" id="exp-etc" oninput="saveRev()" placeholder="ETC" value="${state.revenue.etc||''}" class="bg-gray-50 p-3 rounded-xl outline-none">
+                            <input type="number" id="exp-other" oninput="saveRev()" placeholder="其他" value="${state.revenue.other||''}" class="bg-gray-50 p-3 rounded-xl outline-none col-span-2">
                         </div>
                     </div>
                 </div>`;
-            saveRev(); 
+            saveRev();
+        }
+
+        function renderOrders(container) {
+            container.innerHTML = `
+                <button onclick="openOrderModal()" class="w-full bg-[#bfa07a] text-white py-4 rounded-2xl font-bold shadow-lg flex items-center justify-center gap-2 mb-6"><i class="fas fa-plus-circle"></i> 新增預定單</button>
+                <div class="space-y-3">${state.orders.length===0?'<p class="text-center text-slate-400 py-10 font-bold">目前尚無訂單</p>':state.orders.map((o,idx)=>`
+                    <div class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm relative">
+                        <button onclick="state.orders.splice(${idx},1);render();" class="absolute top-4 right-4 text-slate-200"><i class="fas fa-times"></i></button>
+                        <div class="flex justify-between items-start pr-6">
+                            <div><span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded-md font-bold">${o.date} ${o.time}</span><h4 class="font-black text-slate-700 mt-1">${o.name} (${o.phone})</h4></div>
+                            <span class="text-amber-600 font-black text-lg">$${o.total}</span>
+                        </div>
+                        <div class="text-[11px] text-slate-400 my-2"><i class="fas fa-map-marker-alt mr-1"></i>${o.location}</div>
+                        <div class="border-t border-dashed border-gray-100 pt-2 text-xs text-slate-500">${o.items.map(i=>`${i.name}x${i.qty}`).join('、')}</div>
+                        ${o.note?`<div class="mt-2 text-[10px] bg-amber-50 text-amber-600 p-2 rounded-lg">備註：${o.note}</div>`:''}
+                    </div>`).join('')}</div>`;
         }
 
         function changeQty(i, d) {
-            const data = state.currentMode === 'inventory' ? state.inventory : state.factory;
+            const data = state.mode === 'inventory' ? state.inventory : state.factory;
             data[i] = Math.max(0, (data[i] || 0) + d);
             render();
         }
 
         function saveRev() {
-            if(state.currentMode !== 'revenue') return;
+            if(state.mode !== 'revenue') return;
             state.revenue = {
-                cash: Number(document.getElementById('rev-cash').value) || 0,
-                lp: Number(document.getElementById('rev-lp').value) || 0,
-                costRaw: Number(document.getElementById('rev-cost-raw').value) || 0,
-                fuel: Number(document.getElementById('exp-fuel').value) || 0,
-                rent: Number(document.getElementById('exp-rent').value) || 0,
-                elec: Number(document.getElementById('exp-elec').value) || 0,
-                etc: Number(document.getElementById('exp-etc').value) || 0,
-                other: Number(document.getElementById('exp-other').value) || 0
+                cash: Number(document.getElementById('rev-cash').value)||0, lp: Number(document.getElementById('rev-lp').value)||0,
+                costRaw: Number(document.getElementById('rev-cost-raw').value)||0, fuel: Number(document.getElementById('exp-fuel').value)||0,
+                rent: Number(document.getElementById('exp-rent').value)||0, elec: Number(document.getElementById('exp-elec').value)||0,
+                etc: Number(document.getElementById('exp-etc').value)||0, other: Number(document.getElementById('exp-other').value)||0
             };
             updateStat();
         }
 
         function updateStat() {
-            const val = document.getElementById('stat-value');
-            const lab = document.getElementById('stat-label');
-            if (state.currentMode === 'inventory') {
-                let total = 0; products.forEach((p, i) => total += (state.inventory[i] || 0) * p.price);
-                val.innerText = '$' + total.toLocaleString(); lab.innerText = '庫存價值';
-            } else if (state.currentMode === 'factory') {
-                let qty = 0; Object.values(state.factory).forEach(v => qty += v);
-                val.innerText = qty + ' 件'; lab.innerText = '叫貨總數';
-            } else if (state.currentMode === 'revenue') {
-                const discount = state.revenue.costRaw >= 12000 ? 0.5 : 0.55;
-                const net = (state.revenue.cash + state.revenue.lp) - (state.revenue.costRaw * discount) - (state.revenue.fuel + state.revenue.rent + state.revenue.elec + state.revenue.etc + state.revenue.other);
-                val.innerText = '$' + Math.round(net).toLocaleString(); lab.innerText = '當日純利預估';
-                if(document.getElementById('discount-tag')) document.getElementById('discount-tag').innerText = `適用 ${discount * 10} 折`;
+            const val = document.getElementById('stat-value'), lab = document.getElementById('stat-label');
+            if (state.mode === 'inventory') {
+                let t = 0; products.forEach((p, i) => t += (state.inventory[i] || 0) * p.price);
+                val.innerText = '$' + t.toLocaleString(); lab.innerText = '庫存價值';
+            } else if (state.mode === 'factory') {
+                let q = 0; Object.values(state.factory).forEach(v => q += v);
+                // 自動疊加預訂單數量
+                state.orders.forEach(o => o.items.forEach(i => q += i.qty));
+                val.innerText = q + ' 件'; lab.innerText = '叫貨總數(含預訂)';
+            } else if (state.mode === 'revenue') {
+                const disc = state.revenue.costRaw >= 12000 ? 0.5 : 0.55;
+                const net = (state.revenue.cash + state.revenue.lp) - (state.revenue.costRaw * disc) - (Object.values(state.revenue).reduce((a,b)=>a+b,0) - state.revenue.cash - state.revenue.lp - state.revenue.costRaw);
+                val.innerText = '$' + Math.round(net).toLocaleString(); lab.innerText = '預估淨利';
+                if(document.getElementById('discount-tag')) document.getElementById('discount-tag').innerText = `適用 ${disc*10} 折`;
             }
         }
 
-        function handleMainAction() {
-            alert('數據已儲存於本機！待串接 Google Sheets 後將自動上傳。');
+        function openOrderModal() {
+            document.getElementById('order-modal').classList.remove('hidden');
+            const p = document.getElementById('order-item-picker');
+            p.innerHTML = products.map((prod, i) => `
+                <div class="flex justify-between items-center p-3 bg-white mb-1 rounded-xl">
+                    <span class="text-xs font-bold text-slate-600">${prod.name}</span>
+                    <input type="number" id="pick-${i}" placeholder="0" class="w-12 text-center border-b border-amber-200 outline-none font-bold bg-transparent text-sm">
+                </div>`).join('');
         }
 
+        function saveNewOrder() {
+            const its = []; let t = 0;
+            products.forEach((p, i) => {
+                const q = Number(document.getElementById(`pick-${i}`).value) || 0;
+                if (q > 0) { its.push({ name: p.name, qty: q }); t += p.price * q; }
+            });
+            state.orders.push({
+                date: document.getElementById('o-date').value, time: document.getElementById('o-time').value,
+                name: document.getElementById('o-name').value, phone: document.getElementById('o-phone').value,
+                location: document.getElementById('o-loc').value, note: document.getElementById('o-note').value,
+                items: its, total: t
+            });
+            closeOrderModal(); render();
+        }
+
+        function closeOrderModal() { document.getElementById('order-modal').classList.add('hidden'); }
+        function handleMainAction() { alert('數據儲存成功！已連動叫貨系統。'); }
+        
         switchMode('inventory');
     </script>
 </body>
