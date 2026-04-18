@@ -3,80 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>埕心 SELECT | 點貨系統</title>
+    <title>埕心 SELECT | 數位管理系統</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: #fcfaf7; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #fcfaf7; }
         .product-card { background: #fff; border-radius: 20px; border: 1px solid #f1f1f1; }
-        .stepper-btn { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: #fff; color: #bfa07a; border: 1px solid #eee; }
+        .stepper-btn { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: #fff; color: #bfa07a; border: 1px solid #eee; border-radius: 12px; }
         .unit-tag { font-size: 10px; color: #bfa07a; border: 1px solid #bfa07a; padding: 0 4px; border-radius: 4px; margin-left: 6px; }
+        .active-tab { color: #bfa07a; border-bottom: 3px solid #bfa07a; }
+        .submit-btn { background: linear-gradient(135deg, #bfa07a 0%, #a68a64 100%); box-shadow: 0 10px 20px rgba(191, 160, 122, 0.3); }
     </style>
 </head>
-<body class="pb-24">
+<body class="pb-32">
     <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 px-6 py-5 flex justify-between items-center">
-        <h1 class="text-2xl font-black text-slate-800 italic uppercase">CHENG XIN</h1>
+        <div>
+            <h1 class="text-2xl font-black text-slate-800 italic tracking-tighter uppercase">CHENG XIN</h1>
+            <p id="current-mode" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 text-center bg-slate-100 rounded-full px-2">收攤點貨模式</p>
+        </div>
         <div class="text-right">
-            <span id="total-val" class="text-xl font-black text-red-500">$0</span>
-            <span class="block text-[9px] text-slate-400 font-bold uppercase tracking-widest">當日庫存金額</span>
+            <span id="total-display" class="text-xl font-black text-red-500">$0</span>
+            <span class="block text-[9px] text-slate-400 font-bold uppercase tracking-widest">當日庫存值</span>
         </div>
     </header>
 
     <div id="app" class="p-4 space-y-3"></div>
 
-    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex h-20 items-center justify-around shadow-2xl">
-        <div class="text-[#bfa07a] flex flex-col items-center font-bold"><i class="fas fa-calculator text-xl mb-1"></i><span class="text-xs">收攤點貨</span></div>
-        <div class="text-slate-300 flex flex-col items-center font-bold"><i class="fas fa-truck text-xl mb-1"></i><span class="text-xs">工廠叫貨</span></div>
+    <div class="fixed bottom-24 left-0 right-0 px-6 z-40">
+        <button onclick="submitData()" class="submit-btn w-full py-4 rounded-2xl text-white font-bold text-lg flex items-center justify-center gap-3 active:scale-95 transition-transform">
+            <i class="fas fa-paper-plane"></i> 確認送出數據
+        </button>
+    </div>
+
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex h-20 items-center justify-around shadow-2xl z-50">
+        <div onclick="switchMode('inventory')" id="tab-inv" class="flex flex-col items-center font-bold transition-all active-tab">
+            <i class="fas fa-calculator text-xl mb-1"></i><span class="text-xs">收攤點貨</span>
+        </div>
+        <div onclick="switchMode('order')" id="tab-order" class="flex flex-col items-center font-bold text-slate-300 transition-all">
+            <i class="fas fa-truck text-xl mb-1"></i><span class="text-xs">工廠叫貨</span>
+        </div>
     </nav>
 
     <script>
         const products = [
-            { cat: "麵包區", name: "黃金牛角", price: 35, unit: "個" },
-            { cat: "麵包區", name: "原味小菠蘿", price: 35, unit: "2入" },
-            { cat: "麵包區", name: "奶酥菠蘿", price: 35, unit: "個" },
-            { cat: "麵包區", name: "芋頭菠蘿", price: 35, unit: "個" },
-            { cat: "麵包區", name: "菠蘿金牛角", price: 35, unit: "個" },
-            { cat: "麵包區", name: "楓糖小可頌", price: 35, unit: "3入" },
-            { cat: "麵包區", name: "鹽花可頌", price: 35, unit: "個" },
-            { cat: "麵包區", name: "蘋果派", price: 35, unit: "個" },
-            { cat: "麵包區", name: "巧克力大理石", price: 35, unit: "個" },
-            { cat: "麵包區", name: "可可麵包捲", price: 35, unit: "2入" },
-            { cat: "麵包區", name: "奶香小餐包", price: 35, unit: "2入" },
-            { cat: "麵包區", name: "黃金小羅宋", price: 35, unit: "個" },
-            { cat: "麵包區", name: "北海道鮮奶", price: 35, unit: "個" },
-            { cat: "麵包區", name: "奶酥小炸彈", price: 35, unit: "個" },
-            { cat: "麵包區", name: "牛奶克林姆", price: 35, unit: "個" },
-            { cat: "麵包區", name: "咖啡麵包", price: 35, unit: "個" },
-            { cat: "麵包區", name: "紅豆麵包", price: 35, unit: "個" },
-            { cat: "麵包區", name: "肉鬆麵包", price: 35, unit: "個" },
-            { cat: "麵包區", name: "台式肉鬆蔥捲", price: 35, unit: "個" },
-            { cat: "麵包區", name: "明太子法國麵包", price: 45, unit: "個" },
-            { cat: "麵包區", name: "香蒜法國麵包", price: 35, unit: "個" },
-            { cat: "麵包區", name: "香蒜金磚吐司", price: 35, unit: "個" },
-            { cat: "麵包區", name: "德腸夏威夷", price: 35, unit: "個" },
-            { cat: "麵包區", name: "可可爆漿菠蘿", price: 45, unit: "個" },
-            { cat: "麵包區", name: "巧克力QQ球", price: 35, unit: "個" },
-            { cat: "麵包區", name: "蔓越莓雜糧", price: 45, unit: "個" },
-            { cat: "麵包區", name: "優格蔓越莓", price: 55, unit: "個" },
-            { cat: "麵包區", name: "肉桂核桃捲", price: 55, unit: "個" },
-            { cat: "麵包區", name: "千層牛奶棒", price: 45, unit: "2入" },
-            { cat: "麵包區", name: "蜂蜜起酥蛋糕", price: 35, unit: "個" },
-            { cat: "麵包區", name: "QQ布丁麵包", price: 55, unit: "個" },
-            { cat: "貝果吐司區", name: "原味軟貝果", price: 35, unit: "個" },
-            { cat: "貝果吐司區", name: "火龍果乳酪貝果", price: 45, unit: "個" },
-            { cat: "貝果吐司區", name: "巧克力貝果", price: 45, unit: "個" },
-            { cat: "貝果吐司區", name: "藍莓抹醬貝果", price: 45, unit: "個" },
-            { cat: "貝果吐司區", name: "三色厚片吐司", price: 35, unit: "2片" },
-            { cat: "貝果吐司區", name: "千層小吐司", price: 55, unit: "個" }
+            { cat: "🥖 麵包區", name: "黃金牛角", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "原味小菠蘿", price: 35, unit: "2入" },
+            { cat: "🥖 麵包區", name: "奶酥菠蘿", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "芋頭菠蘿", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "菠蘿金牛角", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "楓糖小可頌", price: 35, unit: "3入" },
+            { cat: "🥖 麵包區", name: "鹽花可頌", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "蘋果派", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "巧克力大理石", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "可可麵包捲", price: 35, unit: "2入" },
+            { cat: "🥖 麵包區", name: "奶香小餐包", price: 35, unit: "2入" },
+            { cat: "🥖 麵包區", name: "黃金小羅宋", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "北海道鮮奶", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "奶酥小炸彈", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "牛奶克林姆", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "咖啡麵包", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "紅豆麵包", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "肉鬆麵包", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "台式肉鬆蔥捲", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "明太子法國麵包", price: 45, unit: "個" },
+            { cat: "🥖 麵包區", name: "香蒜法國麵包", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "香蒜金磚吐司", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "德腸夏威夷", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "可可爆漿菠蘿", price: 45, unit: "個" },
+            { cat: "🥖 麵包區", name: "巧克力QQ球", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "蔓越莓雜糧", price: 45, unit: "個" },
+            { cat: "🥖 麵包區", name: "優格蔓越莓", price: 55, unit: "個" },
+            { cat: "🥖 麵包區", name: "肉桂核桃捲", price: 55, unit: "個" },
+            { cat: "🥖 麵包區", name: "千層牛奶棒", price: 45, unit: "2入" },
+            { cat: "🥖 麵包區", name: "蜂蜜起酥蛋糕", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "QQ布丁麵包", price: 55, unit: "個" },
+            { cat: "🥯 貝果、吐司區", name: "原味軟貝果", price: 35, unit: "個" },
+            { cat: "🥯 貝果、吐司區", name: "火龍果乳酪貝果", price: 45, unit: "個" },
+            { cat: "🥯 貝果、吐司區", name: "巧克力貝果", price: 45, unit: "個" },
+            { cat: "🥯 貝果、吐司區", name: "藍莓抹醬貝果", price: 45, unit: "個" },
+            { cat: "🥯 貝果、吐司區", name: "三色厚片吐司", price: 35, unit: "2片" },
+            { cat: "🥯 貝果、吐司區", name: "千層小吐司", price: 55, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "花瓣檸檬塔", price: 35, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "台式小蛋塔", price: 35, unit: "2入" },
+            { cat: "🍰 蛋糕點心區", name: "蛋糕捲(口味備註)", price: 50, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "檸檬小蛋糕", price: 35, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "草莓小蛋糕", price: 35, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "檸檬布丁塔", price: 35, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "冰心泡芙(口味備註)", price: 35, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "生乳餐包", price: 35, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "卡士達冰心可頌", price: 35, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "紅豆麻糬", price: 35, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "台式馬卡龍", price: 50, unit: "包" },
+            { cat: "🍰 蛋糕點心區", name: "珍珠糖泡芙餅乾", price: 50, unit: "包" },
+            { cat: "🍰 蛋糕點心區", name: "法式奶油球", price: 120, unit: "18入" },
+            { cat: "🍰 蛋糕點心區", name: "肉鬆芋頭小貝", price: 120, unit: "4入" },
+            { cat: "🍰 蛋糕點心區", name: "帕瑪森起士棒", price: 120, unit: "包" }
         ];
 
-        let counts = {};
+        let state = { mode: 'inventory', inventory: {}, order: {} };
 
         function render() {
             const container = document.getElementById('app');
             container.innerHTML = '';
             let currentCat = '';
+            const data = state.mode === 'inventory' ? state.inventory : state.order;
+            
             products.forEach((p, i) => {
                 if (p.cat !== currentCat) {
                     currentCat = p.cat;
@@ -86,27 +118,50 @@
                     container.appendChild(h);
                 }
                 const div = document.createElement('div');
-                div.className = "product-card p-4 flex items-center justify-between shadow-sm";
+                div.className = "product-card p-4 flex items-center justify-between shadow-sm border border-gray-100";
                 div.innerHTML = `
-                    <div>
+                    <div class="flex-1">
                         <div class="flex items-center font-bold text-slate-700 underline decoration-[#bfa07a]/30 decoration-2 underline-offset-4">${p.name}<span class="unit-tag">${p.unit}</span></div>
-                        <p class="text-[10px] text-slate-300 mt-1">$${p.price}</p>
+                        <p class="text-[10px] text-slate-300 mt-1">${state.mode === 'inventory' ? '$' + p.price : '明日需求'}</p>
                     </div>
-                    <div class="flex items-center bg-gray-50 rounded-2xl border border-gray-100 overflow-hidden">
-                        <button onclick="change(${i},-1)" class="stepper-btn active:bg-gray-100"><i class="fas fa-minus"></i></button>
-                        <div class="w-12 text-center font-black text-lg text-slate-700">${counts[i] || 0}</div>
-                        <button onclick="change(${i},1)" class="stepper-btn active:bg-gray-100"><i class="fas fa-plus"></i></button>
+                    <div class="flex items-center bg-gray-50 rounded-xl p-1 border border-gray-100">
+                        <button onclick="change(${i},-1)" class="stepper-btn shadow-sm active:bg-gray-100"><i class="fas fa-minus"></i></button>
+                        <div class="w-12 text-center font-black text-lg text-slate-700">${data[i] || 0}</div>
+                        <button onclick="change(${i},1)" class="stepper-btn shadow-sm active:bg-gray-100"><i class="fas fa-plus"></i></button>
                     </div>`;
                 container.appendChild(div);
             });
+            updateTotal();
         }
 
         function change(i, d) {
-            counts[i] = Math.max(0, (counts[i] || 0) + d);
-            let total = 0;
-            products.forEach((p, idx) => total += (counts[idx] || 0) * p.price);
-            document.getElementById('total-val').innerText = '$' + total.toLocaleString();
+            const data = state.mode === 'inventory' ? state.inventory : state.order;
+            data[i] = Math.max(0, (data[i] || 0) + d);
             render();
+        }
+
+        function updateTotal() {
+            if (state.mode === 'inventory') {
+                let t = 0;
+                products.forEach((p, i) => t += (state.inventory[i] || 0) * p.price);
+                document.getElementById('total-display').innerText = '$' + t.toLocaleString();
+            } else {
+                let q = 0;
+                products.forEach((p, i) => q += (state.order[i] || 0));
+                document.getElementById('total-display').innerText = q + ' 件';
+            }
+        }
+
+        function switchMode(m) {
+            state.mode = m;
+            document.getElementById('tab-inv').className = m === 'inventory' ? 'flex flex-col items-center font-bold active-tab' : 'flex flex-col items-center font-bold text-slate-300';
+            document.getElementById('tab-order').className = m === 'order' ? 'flex flex-col items-center font-bold active-tab' : 'flex flex-col items-center font-bold text-slate-300';
+            document.getElementById('current-mode').innerText = m === 'inventory' ? '收攤點貨模式' : '工廠叫貨模式';
+            render();
+        }
+
+        function submitData() {
+            alert('數據已備齊！準備好串接 Google Sheets 了嗎？');
         }
         render();
     </script>
