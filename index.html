@@ -56,7 +56,7 @@
         <div onclick="switchMode('analysis')" id="nav-analysis" class="flex flex-col items-center font-bold transition-all"><i class="fas fa-chart-line text-lg mb-1"></i><span class="text-[9px]">營業分析</span></div>
     </nav>
 
-    <div id="export-modal" class="hidden fixed inset-0 z-[300] bg-black/80 backdrop-blur-md flex items-center justify-center p-6"><div class="bg-white w-full max-w-sm rounded-[30px] p-6 shadow-2xl relative flex flex-col"><button onclick="document.getElementById('export-modal').classList.add('hidden')" class="absolute top-4 right-6 text-slate-300 text-3xl font-bold">&times;</button><h2 class="text-lg font-black text-slate-800 mb-4 text-center italic">📤 系統彙整報表</h2><textarea id="export-text" class="w-full h-56 bg-gray-50 p-4 rounded-2xl text-[11px] font-bold text-slate-600 outline-none border border-gray-100 mb-4 leading-relaxed" readonly></textarea><a id="line-share-btn" href="#" target="_blank" class="w-full bg-[#06C755] text-white py-4 rounded-2xl font-black text-lg flex items-center justify-center gap-2 shadow-lg"><i class="fab fa-line text-2xl"></i> 傳送至 LINE</a></div></div>
+    <div id="export-modal" class="hidden fixed inset-0 z-[300] bg-black/80 backdrop-blur-md flex items-center justify-center p-6"><div class="bg-white w-full max-w-sm rounded-[30px] p-6 shadow-2xl relative flex flex-col"><button onclick="document.getElementById('export-modal').classList.add('hidden')" class="absolute top-4 right-6 text-slate-300 text-3xl font-bold">&times;</button><h2 class="text-lg font-black text-slate-800 mb-4 text-center italic">📤 系統彙整報表</h2><textarea id="export-text" class="w-full h-64 bg-gray-50 p-4 rounded-2xl text-[11px] font-bold text-slate-600 outline-none border border-gray-100 mb-4 leading-relaxed" readonly></textarea><a id="line-share-btn" href="#" target="_blank" class="w-full bg-[#06C755] text-white py-4 rounded-2xl font-black text-lg flex items-center justify-center gap-2 shadow-lg"><i class="fab fa-line text-2xl"></i> 傳送至 LINE</a></div></div>
     
     <div id="session-modal" class="hidden fixed inset-0 z-[250] bg-black/80 flex items-center justify-center p-6"><div class="bg-white w-full max-w-sm rounded-[40px] p-8 shadow-2xl relative text-center"><button onclick="closeSessionModal()" class="absolute top-6 right-8 text-slate-300 text-2xl font-bold">&times;</button><h2 class="text-xl font-black text-slate-800 mb-6 italic">今日結算對位</h2><div class="space-y-4"><div class="grid grid-cols-2 gap-2"><select id="s-date-m"></select><select id="s-date-d"></select></div><select id="s-loc" class="font-bold text-slate-700"><option value="嘉北街">📍 嘉北街</option><option value="吉品紅豆餅">📍 吉品紅豆餅</option><option value="溪口北極殿">📍 溪口北極殿</option><option value="中正大學">📍 中正大學</option><option value="其他">📍 其他</option></select><button onclick="confirmSession()" class="w-full bg-[#bfa07a] text-white py-4 rounded-2xl font-bold text-lg mt-4 shadow-lg">進入系統</button></div></div></div>
     
@@ -77,7 +77,7 @@
             mode: 'orders', session: { active: false, date: '', location: '', dayOfWeek: 0 },
             targetOrderDate: '', inventory: {}, factory: {}, orders: [], orderDraft: {}, editOrderIndex: null,
             baseOrders: { 0:{}, 1:{}, 2:{}, 3:{}, 4:{}, 5:{}, 6:{} },
-            revenue: { cash: 0, lp: 0, costRaw: 0, fuel: 0, rent: 0, elec: 0, etc: 0, other: 0 }
+            revenue: { cash: 0, lp: 0, costRaw: 0, fuel: 0, rent: 0, elec: 0, etc: 0, other: 0, note: '' }
         };
 
         function loadData() {
@@ -86,14 +86,23 @@
         }
         function persist() { localStorage.setItem('cx_inventory_data', JSON.stringify(state)); }
 
+        // 個別重新統計邏輯
         function confirmReset() {
-            if(!confirm("確定要重新統計嗎？這將清除當前分頁的數值並重新選日期。")) return;
-            if(state.mode === 'inventory') state.inventory = {};
-            if(state.mode === 'revenue') state.revenue = { cash: 0, lp: 0, costRaw: 0, fuel: 0, rent: 0, elec: 0, etc: 0, other: 0 };
-            if(state.mode === 'factory') state.factory = {};
-            state.session.active = false;
-            document.getElementById('session-tag').classList.add('hidden');
-            switchMode(state.mode);
+            if(!confirm("確定要重新統計當前頁面嗎？這將清除目前輸入的數據。")) return;
+            if(state.mode === 'inventory') {
+                state.inventory = {};
+                state.session.active = false;
+                document.getElementById('session-tag').classList.add('hidden');
+                switchMode('inventory');
+            } else if(state.mode === 'revenue') {
+                state.revenue = { cash: 0, lp: 0, costRaw: 0, fuel: 0, rent: 0, elec: 0, etc: 0, other: 0, note: '' };
+                state.session.active = false;
+                document.getElementById('session-tag').classList.add('hidden');
+                switchMode('revenue');
+            } else if(state.mode === 'factory') {
+                state.factory = {};
+                render(); persist();
+            }
         }
 
         async function syncToCloud(sheetName, dataObj) {
@@ -137,7 +146,7 @@
         function renderProducts(container, dataObj, modeType) {
             let cat = ''; products.forEach((p, i) => {
                 if (p.cat !== cat) { cat = p.cat; container.innerHTML += `<h3 class="text-[11px] font-black text-slate-300 mb-3 mt-8 ml-2 uppercase border-l-4 border-amber-200 pl-2 tracking-widest">【 ${cat.replace(/🥖 |🥯 |🍰 /g, '')} 】</h3>`; }
-                container.innerHTML += `<div class="product-card p-4 flex items-center justify-between shadow-sm mb-3"><div class="flex-1"><div class="font-bold text-slate-700 underline decoration-slate-100 underline-offset-4">${p.name}</div><p class="text-[10px] text-slate-300 mt-1">${modeType==='inventory'?'今日剩餘':'需求預估'}</p></div><div class="flex items-center bg-gray-50 rounded-xl p-1 border border-gray-100"><button onclick="changeQty('${modeType}', ${i}, -1)" class="stepper-btn shadow-sm active:bg-gray-100"><i class="fas fa-minus text-xs"></i></button><div class="w-12 text-center font-black text-slate-700">${dataObj[i] || 0}</div><button onclick="changeQty('${modeType}', ${i}, 1)" class="stepper-btn shadow-sm active:bg-gray-100"><i class="fas fa-plus text-xs"></i></button></div></div>`;
+                container.innerHTML += `<div class="product-card p-4 flex items-center justify-between shadow-sm mb-3"><div class="flex-1"><div class="font-bold text-slate-700">${p.name}</div><p class="text-[10px] text-slate-300 mt-1">${modeType==='inventory'?'今日剩餘':'需求預估'}</p></div><div class="flex items-center bg-gray-50 rounded-xl p-1 border border-gray-100"><button onclick="changeQty('${modeType}', ${i}, -1)" class="stepper-btn shadow-sm active:bg-gray-100"><i class="fas fa-minus text-xs"></i></button><div class="w-12 text-center font-black text-slate-700">${dataObj[i] || 0}</div><button onclick="changeQty('${modeType}', ${i}, 1)" class="stepper-btn shadow-sm active:bg-gray-100"><i class="fas fa-plus text-xs"></i></button></div></div>`;
             });
         }
 
@@ -148,7 +157,7 @@
             const tDay = targetDateObj.getDay(); const isReg = [0, 2, 4].includes(tDay);
             const prevDate = new Date(targetDateObj); prevDate.setDate(targetDateObj.getDate() - 1);
             
-            container.innerHTML = `<div class="bg-slate-800 p-6 rounded-[30px] mb-6 shadow-xl text-white text-center"><p class="text-[10px] font-black text-slate-400 mb-3 tracking-widest uppercase italic">預定到貨日期</p><div class="grid grid-cols-2 gap-2 mb-4"><select id="f-date-m" onchange="updateTargetDate()" class="bg-slate-700 text-white"></select><select id="f-date-d" onchange="updateTargetDate()" class="bg-slate-700 text-white"></select></div><div class="bg-white/10 p-3 rounded-2xl border border-white/5 mb-3"><p class="text-[12px] font-black ${isReg?'text-amber-300':'text-slate-400'}">${state.targetOrderDate} (週${['日','一','二','三','四','五','六'][tDay]}) ${isReg?'【出車日大補貨】':'【僅預定補貨】'}</p></div><p class="text-[10px] font-bold text-red-400 animate-pulse">請在 ${prevDate.getMonth()+1}/${prevDate.getDate()} 11:00 之前送出</p></div><div id="factory-list"></div>`;
+            container.innerHTML = `<div class="bg-slate-800 p-6 rounded-[30px] mb-6 shadow-xl text-white text-center"><p class="text-[10px] font-black text-slate-400 mb-3 tracking-widest uppercase italic">預定到貨日期</p><div class="grid grid-cols-2 gap-2 mb-4"><select id="f-date-m" onchange="updateTargetDate()" class="bg-slate-700 text-white text-center"></select><select id="f-date-d" onchange="updateTargetDate()" class="bg-slate-700 text-white text-center"></select></div><div class="bg-white/10 p-3 rounded-2xl border border-white/5 mb-3"><p class="text-[12px] font-black ${isReg?'text-amber-300':'text-slate-400'}">${state.targetOrderDate} (週${['日','一','二','三','四','五','六'][tDay]}) ${isReg?'【出車日大補貨】':'【僅預定補貨】'}</p></div><p class="text-[10px] font-bold text-red-400 animate-pulse">請在 ${prevDate.getMonth()+1}/${prevDate.getDate()} 11:00 之前送出</p></div><div id="factory-list"></div>`;
             
             const ms = Array.from({length:12},(_,i)=>i+1), ds = Array.from({length:31},(_,i)=>i+1);
             document.getElementById('f-date-m').innerHTML = ms.map(v=>`<option value="${v}" ${v==m?'selected':''}>${v}月</option>`).join('');
@@ -185,10 +194,11 @@
                         <h3 class="text-xs font-black text-red-400 uppercase mb-4">支出明細</h3>
                         <div class="grid grid-cols-2 gap-3">
                             <input type="number" inputmode="decimal" id="exp-fuel" oninput="saveRev()" placeholder="加油" value="${state.revenue.fuel||''}" class="bg-gray-50 p-3 rounded-xl text-sm text-center outline-none">
-                            <input type="number" inputmode="decimal" id="exp-rent" oninput="saveRev()" placeholder="租金" value="${state.revenue.rent||''}" class="bg-gray-50 p-3 rounded-xl text-sm text-center outline-none">
                             <input type="number" inputmode="decimal" id="exp-elec" oninput="saveRev()" placeholder="電費" value="${state.revenue.elec||''}" class="bg-gray-50 p-3 rounded-xl text-sm text-center outline-none">
                             <input type="number" inputmode="decimal" id="exp-etc" oninput="saveRev()" placeholder="ETC" value="${state.revenue.etc||''}" class="bg-gray-50 p-3 rounded-xl text-sm text-center outline-none">
-                            <input type="number" inputmode="decimal" id="exp-other" oninput="saveRev()" placeholder="雜項" value="${state.revenue.other||''}" class="bg-gray-50 p-3 rounded-xl text-sm text-center outline-none col-span-2">
+                            <input type="number" inputmode="decimal" id="exp-rent" oninput="saveRev()" placeholder="餐車租金" value="${state.revenue.rent||''}" class="bg-gray-50 p-3 rounded-xl text-sm text-center outline-none">
+                            <input type="number" inputmode="decimal" id="exp-other" oninput="saveRev()" placeholder="雜項" value="${state.revenue.other||''}" class="bg-gray-50 p-3 rounded-xl text-sm text-center outline-none">
+                            <input type="text" id="exp-note" oninput="saveRev()" placeholder="備註..." value="${state.revenue.note||''}" class="bg-gray-50 p-3 rounded-xl text-sm text-center outline-none col-span-2">
                         </div>
                     </div>
                 </div>`;
@@ -220,7 +230,7 @@
         async function exportInventory() { 
             let totalVal = 0; products.forEach((p, i) => totalVal += (state.inventory[i] || 0) * p.price);
             const dStr = ['日','一','二','三','四','五','六'][state.session.dayOfWeek];
-            let txt = `📦【 鍇埕 | 收攤庫存 】\n📅 日期：${state.session.date}（${dStr}）\n📍 地點：${state.session.location}\n💰 庫存金額：${totalVal} 元\n------------------\n`; 
+            let txt = `📦【 鍇埕 | 收攤庫存 】\n📅 日期：${state.session.date}(${dStr})\n📍 地點：${state.session.location}\n💰 庫存：${totalVal}元\n------------------\n`; 
             let cloud = {}; let hasAny = false;
             products.forEach((p, i) => { if(state.inventory[i] > 0) { txt += `🔸 ${p.name}：${state.inventory[i]} 個\n`; cloud[p.name] = state.inventory[i]; hasAny = true; } }); 
             if(!hasAny) txt += "本日無庫存剩餘。\n";
@@ -230,13 +240,24 @@
         async function exportRevenue() { 
             const disc = state.revenue.costRaw >= 12000 ? 0.5 : 0.55, totalExp = state.revenue.fuel + state.revenue.rent + state.revenue.elec + state.revenue.etc + state.revenue.other;
             const net = (state.revenue.cash + state.revenue.lp) - (state.revenue.costRaw * disc) - totalExp; 
-            let txt = `💰【 鍇埕 | 營收報表 】\n📅 日期：${state.session.date}\n📍 地點：${state.session.location}\n------------------\n💵 總營收：$${state.revenue.cash + state.revenue.lp}\n📦 成本：$${state.revenue.costRaw * disc}\n💸 總支出：$${totalExp}\n------------------\n✨ 今日純利：$${Math.round(net)}`; 
-            await syncToCloud('Revenue', { "現金": state.revenue.cash, "LinePay": state.revenue.lp, "成本": state.revenue.costRaw * disc, "純利": Math.round(net) }); 
+            const dStr = ['日','一','二','三','四','五','六'][state.session.dayOfWeek];
+            
+            let txt = `💰【 鍇埕 | 營收報表 】\n📅 日期：${state.session.date}(${dStr})\n📍 地點：${state.session.location}\n------------------\n`;
+            txt += `💵 總營收：$${state.revenue.cash + state.revenue.lp}\nLINE PAY：$${state.revenue.lp}\n`;
+            txt += `📦 進貨成本：$${state.revenue.costRaw * disc}\n💸 支出明細：$${totalExp}\n`;
+            if (state.revenue.note) txt += `📝 備註：${state.revenue.note}\n`;
+            txt += `------------------\n✨ 今日收益：$${Math.round(net)}`;
+
+            await syncToCloud('Revenue', { "現金": state.revenue.cash, "LinePay": state.revenue.lp, "成本": state.revenue.costRaw * disc, "純利": Math.round(net), "備註": state.revenue.note }); 
             showExportModal(txt); 
         }
 
         async function exportFactory() { 
-            let txt = `📝【 鍇埕 | 工廠叫貨單 】\n📅 預定到貨日：${state.targetOrderDate}\n------------------\n`; 
+            const [m, d] = state.targetOrderDate.split('/'); 
+            const tDay = new Date(new Date().getFullYear(), m-1, d).getDay(); 
+            const dStr = ['日','一','二','三','四','五','六'][tDay];
+
+            let txt = `📝【 鍇埕 | 叫貨單 】\n📅 取貨日：${state.targetOrderDate} (${dStr})\n------------------\n`; 
             let cloud = {}; let hasAny = false;
             products.forEach((p, i) => { if(state.factory[i] > 0) { txt += `🔸 ${p.name}：${state.factory[i]} 個\n`; cloud[p.name] = state.factory[i]; hasAny = true; } }); 
             if(!hasAny) txt += "本日無需叫貨。\n";
@@ -264,7 +285,7 @@
         function renderBaseItemPicker() { const day = document.getElementById('base-day-select').value, picker = document.getElementById('base-item-picker'); picker.innerHTML = ''; let cat = '', total = 0; products.forEach((p, i) => { if (p.cat !== cat) { cat = p.cat; picker.innerHTML += `<h3 class="text-[11px] font-black text-slate-300 mb-3 mt-6 ml-1 tracking-widest uppercase text-center">【 ${cat.replace(/🥖 |🥯 |🍰 /g, '')} 】</h3>`; } const qty = state.baseOrders[day][i] || 0; total += qty * p.price; picker.innerHTML += `<div class="bg-gray-50 p-4 rounded-2xl flex items-center justify-between mb-2"><span class="text-xs font-bold text-slate-600">${p.name}</span><div class="flex items-center bg-white rounded-xl p-1 shadow-sm"><button onclick="changeBaseQty(${day}, ${i}, -1)" class="w-8 h-8 flex items-center justify-center text-[#bfa07a]"><i class="fas fa-minus text-[10px]"></i></button><div class="w-10 text-center font-black text-slate-700 text-sm">${qty}</div><button onclick="changeBaseQty(${day}, ${i}, 1)" class="w-8 h-8 flex items-center justify-center text-[#bfa07a]"><i class="fas fa-plus text-[10px]"></i></button></div></div>`; }); document.getElementById('base-total').innerText = '$' + total.toLocaleString(); }
         function renderOrderItemPicker() { const p=document.getElementById('order-item-picker'); p.innerHTML=''; let cat=''; products.forEach((prod,i)=>{ if(prod.cat!==cat){ cat=prod.cat; p.innerHTML+=`<h3 class="text-[10px] font-black text-slate-300 mb-2 mt-4 italic border-b pb-1 uppercase tracking-widest text-center">【 ${cat.replace(/🥖 |🥯 |🍰 /g,'')} 】</h3>`; } p.innerHTML+= `<div class="bg-white p-3 rounded-2xl flex items-center justify-between shadow-sm border border-gray-100 mb-2"><span class="text-xs font-bold text-slate-600">${prod.name}</span><div class="flex items-center bg-gray-50 rounded-xl p-1"><button onclick="changeQty('draft',${i},-1)" class="stepper-btn"><i class="fas fa-minus text-[10px]"></i></button><div id="draft-qty-${i}" class="w-8 text-center font-black text-slate-700 text-sm">${state.orderDraft[i]||0}</div><button onclick="changeQty('draft',${i},1)" class="stepper-btn"><i class="fas fa-plus text-[10px]"></i></button></div></div>`; }); }
         function updateTargetDate() { state.targetOrderDate = `${document.getElementById('f-date-m').value}/${document.getElementById('f-date-d').value}`; state.factory = {}; render(); persist(); }
-        function saveRev() { if(state.mode !== 'revenue') return; state.revenue = { cash: Number(document.getElementById('rev-cash').value)||0, lp: Number(document.getElementById('rev-lp').value)||0, costRaw: Number(document.getElementById('rev-cost-raw').value)||0, fuel: Number(document.getElementById('exp-fuel').value)||0, rent: Number(document.getElementById('exp-rent').value)||0, elec: Number(document.getElementById('exp-elec').value)||0, etc: Number(document.getElementById('exp-etc').value)||0, other: Number(document.getElementById('exp-other').value)||0 }; updateStat(); persist(); }
+        function saveRev() { if(state.mode !== 'revenue') return; state.revenue = { cash: Number(document.getElementById('rev-cash').value)||0, lp: Number(document.getElementById('rev-lp').value)||0, costRaw: Number(document.getElementById('rev-cost-raw').value)||0, fuel: Number(document.getElementById('exp-fuel').value)||0, rent: Number(document.getElementById('exp-rent').value)||0, elec: Number(document.getElementById('exp-elec').value)||0, etc: Number(document.getElementById('exp-etc').value)||0, other: Number(document.getElementById('exp-other').value)||0, note: document.getElementById('exp-note') ? document.getElementById('exp-note').value : '' }; updateStat(); persist(); }
         function toggleOtherLoc() { document.getElementById('o-loc-other').classList.toggle('hidden', document.getElementById('o-loc-select').value !== '其他'); }
         function closeOrderModal() { document.getElementById('order-modal').classList.add('hidden'); }
         function openBaseOrderModal() { document.getElementById('base-order-modal').classList.remove('hidden'); renderBaseItemPicker(); }
