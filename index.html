@@ -9,35 +9,36 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
         body { font-family: 'Noto Sans TC', sans-serif; background-color: #fcfaf7; -webkit-tap-highlight-color: transparent; }
-        .product-card { background: #fff; border-radius: 20px; border: 1px solid #f1f1f1; }
+        .product-card { background: #fff; border-radius: 20px; border: 1px solid #f1f1f1; transition: all 0.2s; }
         .active-tab { color: #bfa07a !important; border-bottom: 3px solid #bfa07a; }
         .submit-btn { background: linear-gradient(135deg, #bfa07a 0%, #a68a64 100%); box-shadow: 0 10px 20px rgba(191, 160, 122, 0.3); }
-        .stepper-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #fff; color: #bfa07a; border: 1px solid #eee; border-radius: 10px; }
-        .unit-tag { font-size: 10px; color: #bfa07a; border: 1px solid #bfa07a; padding: 0 4px; border-radius: 4px; margin-left: 6px; }
-        select { -webkit-appearance: none; appearance: none; background: #f9f9f9; border: none; padding: 12px; border-radius: 15px; font-weight: bold; color: #333; width: 100%; text-align: center; }
-        .analysis-card { background: linear-gradient(135deg, #ffffff 0%, #f9f9f9 100%); border-radius: 24px; }
+        .stepper-btn { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; background: #fff; color: #bfa07a; border: 1px solid #eee; border-radius: 10px; }
+        .unit-tag { font-size: 10px; color: #bfa07a; border: 1px solid #bfa07a; padding: 0 4px; border-radius: 4px; margin-left: 6px; font-weight: bold; }
+        select { -webkit-appearance: none; appearance: none; background: #f9f9f9; border: none; padding: 10px; border-radius: 15px; font-weight: bold; color: #333; width: 100%; text-align: center; border: 1px solid #eee; }
     </style>
 </head>
 <body class="pb-36">
     <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 px-6 py-5 flex justify-between items-center shadow-sm">
         <div>
             <div class="flex items-center gap-2">
-                <h1 class="text-2xl font-black text-slate-800 italic uppercase">CHENG XIN</h1>
-                <span id="session-tag" class="text-[9px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold hidden">已開班</span>
+                <h1 class="text-2xl font-black text-slate-800 italic tracking-tighter uppercase">CHENG XIN</h1>
+                <span id="session-tag" class="text-[9px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold hidden">結算模式中</span>
             </div>
             <p id="current-mode-title" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">管理系統</p>
         </div>
         <div class="text-right flex flex-col items-end">
-            <div id="factory-config-btn" class="hidden mb-1"><button onclick="openBaseOrderModal()" class="text-[10px] bg-slate-800 text-white px-2 py-1 rounded-lg font-bold">基本量設定</button></div>
+            <div id="factory-config-btn" class="hidden mb-1"><button onclick="openBaseOrderModal()" class="text-[10px] bg-slate-800 text-white px-3 py-1.5 rounded-xl font-bold">基本量設定</button></div>
             <span id="stat-value" class="text-xl font-black text-red-500">$0</span>
-            <span id="stat-label" class="block text-[9px] text-slate-400 font-bold uppercase tracking-widest">系統數值</span>
+            <span id="stat-label" class="block text-[9px] text-slate-400 font-bold uppercase tracking-widest italic">系統數值</span>
         </div>
     </header>
 
     <div id="app" class="p-4"></div>
 
     <div id="action-bar" class="hidden fixed bottom-24 left-0 right-0 px-6 z-40">
-        <button onclick="handleMainAction()" class="submit-btn w-full py-4 rounded-2xl text-white font-bold text-lg">確認送出數據</button>
+        <button onclick="handleMainAction()" class="submit-btn w-full py-4 rounded-2xl text-white font-bold text-lg flex items-center justify-center gap-3">
+            <i class="fas fa-check-circle"></i> 確認送出今日結算
+        </button>
     </div>
 
     <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex h-20 items-center justify-around shadow-2xl z-50 text-slate-300">
@@ -48,25 +49,142 @@
         <div onclick="switchMode('analysis')" id="nav-analysis" class="flex flex-col items-center font-bold transition-all"><i class="fas fa-chart-line text-lg mb-1"></i><span class="text-[9px]">營業分析</span></div>
     </nav>
 
-    <div id="base-order-modal" class="hidden fixed inset-0 z-[200] bg-black/80 flex items-end"><div class="bg-white w-full rounded-t-[40px] p-6 max-h-[90vh] overflow-hidden flex flex-col"><div class="flex justify-between items-center mb-4"><h2 class="text-xl font-black">⚙️ 出車日基本量</h2><button onclick="closeBaseOrderModal()" class="text-slate-400 text-3xl">&times;</button></div><select id="base-day-select" onchange="renderBaseItemPicker()" class="mb-4 bg-amber-50 text-amber-700"><option value="2">星期二</option><option value="4">星期四</option><option value="0">星期日</option><option value="1">星期一</option><option value="3">星期三</option><option value="5">星期五</option><option value="6">星期六</option></select><div id="base-item-picker" class="overflow-y-auto space-y-2 pb-10"></div><button onclick="closeBaseOrderModal()" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-bold mt-2">儲存設定</button></div></div>
-    <div id="session-modal" class="hidden fixed inset-0 z-[250] bg-black/80 flex items-center justify-center p-6"><div class="bg-white w-full max-w-sm rounded-[40px] p-8 text-center"><h2 class="font-black mb-4">開始結算作業</h2><div class="grid grid-cols-2 gap-2 mb-4"><select id="s-date-m"></select><select id="s-date-d"></select></div><select id="s-loc" class="mb-4 font-bold"><option value="嘉北街">嘉北街</option><option value="吉品紅豆餅">吉品紅豆餅</option><option value="溪口北極殿">溪口北極殿</option><option value="中正大學">中正大學</option><option value="其他">其他</option></select><button onclick="confirmSession()" class="w-full bg-[#bfa07a] text-white py-4 rounded-2xl font-bold">確認進入</button></div></div>
-    <div id="order-modal" class="hidden fixed inset-0 z-[100] bg-black/60 flex items-end"><div class="bg-white w-full rounded-t-[40px] p-6 max-h-[90vh] overflow-hidden flex flex-col"><h2 class="font-black mb-4">📝 新增預定單</h2><div class="overflow-y-auto space-y-4 pb-10"><div class="grid grid-cols-3 gap-2"><select id="o-date-m"></select><select id="o-date-d"></select><div class="flex gap-1"><select id="o-time-h"></select><select id="o-time-m"></select></div></div><div class="grid grid-cols-2 gap-3"><input type="text" id="o-name" placeholder="姓名" class="bg-gray-50 p-4 rounded-2xl font-bold"><input type="text" id="o-phone" placeholder="末三碼" class="bg-gray-50 p-4 rounded-2xl font-bold"></div><select id="o-loc-select" onchange="toggleOtherLoc()" class="font-bold"><option value="嘉北街">嘉北街</option><option value="吉品紅豆餅">吉品紅豆餅</option><option value="溪口北極殿">溪口北極殿</option><option value="中正大學">中正大學</option><option value="其他">其他</option></select><div id="order-item-picker" class="space-y-2"></div><textarea id="o-note" placeholder="備註..." class="w-full bg-gray-50 p-4 rounded-2xl font-bold h-20"></textarea><button onclick="saveNewOrder()" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-bold text-lg">確認加入</button></div></div></div>
+    <div id="base-order-modal" class="hidden fixed inset-0 z-[200] bg-black/80 backdrop-blur-md flex items-end">
+        <div class="bg-white w-full rounded-t-[40px] p-6 max-h-[95vh] overflow-hidden flex flex-col shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-black text-slate-800 italic">⚙️ 基本量設定</h2>
+                <div class="text-right">
+                    <span id="base-total" class="text-lg font-black text-amber-600">$0</span>
+                    <p class="text-[9px] text-slate-400 font-bold uppercase">預計成本</p>
+                </div>
+            </div>
+            <select id="base-day-select" onchange="renderBaseItemPicker()" class="mb-4 bg-amber-50 text-amber-700">
+                <option value="1">週一</option><option value="2">週二 (出車)</option><option value="3">週三</option>
+                <option value="4">週四 (出車)</option><option value="5">週五</option><option value="6">週六</option><option value="0">週日 (出車)</option>
+            </select>
+            <div id="base-item-picker" class="overflow-y-auto space-y-4 pb-20"></div>
+            <div class="absolute bottom-6 left-6 right-6">
+                <button onclick="closeBaseOrderModal()" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-bold shadow-xl">儲存並關閉</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="session-modal" class="hidden fixed inset-0 z-[250] bg-black/80 backdrop-blur-md flex items-center justify-center p-6">
+        <div class="bg-white w-full max-w-sm rounded-[40px] p-8 shadow-2xl relative">
+            <button onclick="closeSessionModal()" class="absolute top-6 right-8 text-slate-300 text-2xl font-bold">&times;</button>
+            <div class="text-center mb-6 pt-4">
+                <div class="w-16 h-16 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl"><i class="fas fa-calendar-check"></i></div>
+                <h2 class="text-xl font-black text-slate-800 italic">開始今日結算</h2>
+                <p class="text-xs text-slate-400 mt-1 font-bold">請確認日期與地點以對位後台數據</p>
+            </div>
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-2"><select id="s-date-m"></select><select id="s-date-d"></select></div>
+                <select id="s-loc" class="font-bold text-slate-700">
+                    <option value="嘉北街">📍 嘉北街</option><option value="吉品紅豆餅">📍 吉品紅豆餅</option><option value="溪口北極殿">📍 溪口北極殿</option><option value="中正大學">📍 中正大學</option><option value="其他">📍 其他</option>
+                </select>
+                <button onclick="confirmSession()" class="w-full bg-[#bfa07a] text-white py-4 rounded-2xl font-bold text-lg mt-4 shadow-lg shadow-[#bfa07a]/30">進入系統</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="order-modal" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end">
+        <div class="bg-white w-full rounded-t-[40px] p-6 max-h-[95vh] overflow-hidden flex flex-col">
+            <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-black text-slate-800 italic">📝 新增預定單</h2><button onclick="closeOrderModal()" class="text-slate-400 text-3xl">&times;</button></div>
+            <div class="overflow-y-auto space-y-4 pb-12">
+                <div class="bg-gray-50 p-4 rounded-3xl space-y-3">
+                    <div class="grid grid-cols-3 gap-2"><select id="o-date-m"></select><select id="o-date-d"></select><div class="flex gap-1"><select id="o-time-h"></select><select id="o-time-m"></select></div></div>
+                </div>
+                <div class="grid grid-cols-2 gap-3"><input type="text" id="o-name" placeholder="姓名" class="bg-gray-50 p-4 rounded-2xl font-bold"><input type="text" id="o-phone" placeholder="末三碼" class="bg-gray-50 p-4 rounded-2xl font-bold"></div>
+                <select id="o-loc-select" onchange="toggleOtherLoc()" class="font-bold text-slate-700"><option value="嘉北街">📍 嘉北街</option><option value="吉品紅豆餅">📍 吉品紅豆餅</option><option value="溪口北極殿">📍 溪口北極殿</option><option value="中正大學">📍 中正大學</option><option value="其他">📍 其他</option></select>
+                <input type="text" id="o-loc-other" placeholder="手動輸入地點" class="hidden w-full bg-amber-50 p-4 rounded-2xl font-bold border border-amber-100 text-amber-700">
+                <h3 class="font-black text-slate-700 border-t border-gray-100 pt-4">預定品項</h3>
+                <div id="order-item-picker" class="space-y-4"></div>
+                <textarea id="o-note" placeholder="備註..." class="w-full bg-gray-50 p-4 rounded-2xl font-bold h-20"></textarea>
+                <button onclick="saveNewOrder()" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-bold text-lg shadow-xl">確認加入預定單</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         const products = [
-            { cat: "🥖 麵包區", name: "黃金牛角", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "原味小菠蘿", price: 35, unit: "2入" }, { cat: "🥖 麵包區", name: "奶酥菠蘿", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "芋頭菠蘿", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "菠蘿金牛角", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "楓糖小可頌", price: 35, unit: "3入" }, { cat: "🥖 麵包區", name: "鹽花可頌", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "蘋果派", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "巧克力大理石", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "可可麵包捲", price: 35, unit: "2入" }, { cat: "🥖 麵包區", name: "奶香小餐包", price: 35, unit: "2入" }, { cat: "🥖 麵包區", name: "黃金小羅宋", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "北海道鮮奶", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "奶酥小炸彈", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "牛奶克林姆", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "咖啡麵包", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "紅豆麵包", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "肉鬆麵包", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "台式肉鬆蔥捲", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "明太子法國麵包", price: 45, unit: "個" }, { cat: "🥖 麵包區", name: "香蒜法國麵包", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "香蒜金磚吐司", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "德腸夏威夷", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "可可爆漿菠蘿", price: 45, unit: "個" }, { cat: "🥖 麵包區", name: "巧克力QQ球", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "蔓越莓雜糧", price: 45, unit: "個" }, { cat: "🥖 麵包區", name: "優格蔓越莓", price: 55, unit: "個" }, { cat: "🥖 麵包區", name: "肉桂核桃捲", price: 55, unit: "個" }, { cat: "🥖 麵包區", name: "千層牛奶棒", price: 45, unit: "2入" }, { cat: "🥖 麵包區", name: "蜂蜜起酥蛋糕", price: 35, unit: "個" }, { cat: "🥖 麵包區", name: "QQ布丁麵包", price: 55, unit: "個" }, { cat: "🥯 貝果、吐司區", name: "原味軟貝果", price: 35, unit: "個" }, { cat: "🥯 貝果、吐司區", name: "火龍果乳酪貝果", price: 45, unit: "個" }, { cat: "🥯 貝果、吐司區", name: "巧克力貝果", price: 45, unit: "個" }, { cat: "🥯 貝果、吐司區", name: "藍莓抹醬貝果", price: 45, unit: "個" }, { cat: "🥯 貝果、吐司區", name: "三色厚片吐司", price: 35, unit: "2片" }, { cat: "🥯 貝果、吐司區", name: "千層小吐司", price: 55, unit: "個" }, { cat: "🍰 蛋糕點心區", name: "花瓣檸檬塔", price: 35, unit: "個" }, { cat: "🍰 蛋糕點心區", name: "台式小蛋塔", price: 35, unit: "2入" }, { cat: "🍰 蛋糕點心區", name: "蛋糕捲", price: 50, unit: "個" }, { cat: "🍰 蛋糕點心區", name: "檸檬小蛋糕", price: 35, unit: "個" }, { cat: "🍰 蛋糕點心區", name: "草莓小蛋糕", price: 35, unit: "個" }, { cat: "🍰 蛋糕點心區", name: "檸檬布丁塔", price: 35, unit: "個" }, { cat: "🍰 蛋糕點心區", name: "冰心泡芙", price: 35, unit: "個" }, { cat: "🍰 蛋糕點心區", name: "生乳餐包", price: 35, unit: "個" }, { cat: "🍰 蛋糕點心區", name: "卡士達冰心可頌", price: 35, unit: "個" }, { cat: "🍰 蛋糕點心區", name: "紅豆麻糬", price: 35, unit: "個" }, { cat: "🍰 蛋糕點心區", name: "台式馬卡龍", price: 50, unit: "包" }, { cat: "🍰 蛋糕點心區", name: "珍珠糖泡芙餅乾", price: 50, unit: "包" }, { cat: "🍰 蛋糕點心區", name: "法式奶油球", price: 120, unit: "18入" }, { cat: "🍰 蛋糕點心區", name: "肉鬆芋頭小貝", price: 120, unit: "4入" }, { cat: "🍰 蛋糕點心區", name: "帕瑪森起士棒", price: 120, unit: "包" }
+            // 麵包區
+            { cat: "🥖 麵包區", name: "黃金牛角", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "原味小菠蘿", price: 35, unit: "2入" },
+            { cat: "🥖 麵包區", name: "奶酥菠蘿", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "芋頭菠蘿", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "菠蘿金牛角", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "楓糖小可頌", price: 35, unit: "3入" },
+            { cat: "🥖 麵包區", name: "鹽花可頌", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "蘋果派", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "巧克力大理石", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "可可麵包捲", price: 35, unit: "2入" },
+            { cat: "🥖 麵包區", name: "奶香小餐包", price: 35, unit: "2入" },
+            { cat: "🥖 麵包區", name: "黃金小羅宋", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "北海道鮮奶", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "奶酥小炸彈", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "牛奶克林姆", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "咖啡麵包", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "紅豆麵包", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "肉鬆麵包", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "台式肉鬆蔥捲", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "明太子法國麵包", price: 45, unit: "個" },
+            { cat: "🥖 麵包區", name: "香蒜法國麵包", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "香蒜金磚吐司", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "德腸夏威夷", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "可可爆漿菠蘿", price: 45, unit: "個" },
+            { cat: "🥖 麵包區", name: "巧克力QQ球", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "蔓越莓雜糧", price: 45, unit: "個" },
+            { cat: "🥖 麵包區", name: "優格蔓越莓", price: 55, unit: "個" },
+            { cat: "🥖 麵包區", name: "肉桂核桃捲", price: 55, unit: "個" },
+            { cat: "🥖 麵包區", name: "千層牛奶棒", price: 45, unit: "2入" },
+            { cat: "🥖 麵包區", name: "蜂蜜起酥蛋糕", price: 35, unit: "個" },
+            { cat: "🥖 麵包區", name: "QQ布丁麵包", price: 55, unit: "個" },
+            // 貝果、吐司區
+            { cat: "🥯 貝果、吐司區", name: "原味軟貝果", price: 35, unit: "個" },
+            { cat: "🥯 貝果、吐司區", name: "火龍果乳酪貝果", price: 45, unit: "個" },
+            { cat: "🥯 貝果、吐司區", name: "巧克力貝果", price: 45, unit: "個" },
+            { cat: "🥯 貝果、吐司區", name: "藍莓抹醬貝果", price: 45, unit: "個" },
+            { cat: "🥯 貝果、吐司區", name: "三色厚片吐司", price: 35, unit: "2片" },
+            { cat: "🥯 貝果、吐司區", name: "千層小吐司", price: 55, unit: "個" },
+            // 蛋糕點心區
+            { cat: "🍰 蛋糕點心區", name: "花瓣檸檬塔", price: 35, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "台式小蛋塔", price: 35, unit: "2入" },
+            { cat: "🍰 蛋糕點心區", name: "蛋糕捲 (巧克力)", price: 50, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "蛋糕捲 (草莓)", price: 50, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "蛋糕捲 (芋頭)", price: 50, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "蛋糕捲 (香草)", price: 50, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "檸檬小蛋糕", price: 35, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "草莓小蛋糕", price: 35, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "檸檬布丁塔", price: 35, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "冰心泡芙 (巧克力)", price: 35, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "冰心泡芙 (草莓)", price: 35, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "冰心泡芙 (卡士達)", price: 35, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "生乳餐包", price: 35, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "卡士達冰心可頌", price: 35, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "紅豆麻糬", price: 35, unit: "個" },
+            { cat: "🍰 蛋糕點心區", name: "台式馬卡龍 (原味)", price: 50, unit: "包" },
+            { cat: "🍰 蛋糕點心區", name: "台式馬卡龍 (巧克力)", price: 50, unit: "包" },
+            { cat: "🍰 蛋糕點心區", name: "台式馬卡龍 (草莓)", price: 50, unit: "包" },
+            { cat: "🍰 蛋糕點心區", name: "珍珠糖泡芙餅乾", price: 50, unit: "包" },
+            { cat: "🍰 蛋糕點心區", name: "法式奶油球 (巧克力)", price: 120, unit: "18入" },
+            { cat: "🍰 蛋糕點心區", name: "法式奶油球 (草莓)", price: 120, unit: "18入" },
+            { cat: "🍰 蛋糕點心區", name: "法式奶油球 (原味)", price: 120, unit: "18入" },
+            { cat: "🍰 蛋糕點心區", name: "肉鬆芋頭小貝", price: 120, unit: "4入" },
+            { cat: "🍰 蛋糕點心區", name: "帕瑪森起士棒", price: 120, unit: "包" }
         ];
 
         let state = {
             mode: 'orders',
             session: { active: false, date: '', location: '', dayOfWeek: 0 },
-            targetOrderDate: '', inventory: {}, factory: {}, orders: [], orderDraft: {},
+            inventory: {}, factory: {}, orders: [], orderDraft: {},
             baseOrders: { 0:{}, 1:{}, 2:{}, 3:{}, 4:{}, 5:{}, 6:{} },
             revenue: { cash: 0, lp: 0, costRaw: 0, fuel: 0, rent: 0, elec: 0, etc: 0, other: 0 }
         };
 
         function switchMode(m) {
-            if ((m === 'inventory' || m === 'revenue') && !state.session.active) { state.tempMode = m; openSessionModal(); return; }
+            if ((m === 'inventory' || m === 'revenue') && !state.session.active) {
+                state.tempMode = m; openSessionModal(); return;
+            }
             state.mode = m;
             ['inventory', 'revenue', 'orders', 'factory', 'analysis'].forEach(t => {
                 if(document.getElementById('nav-'+t)) document.getElementById('nav-'+t).classList.toggle('active-tab', t===m);
@@ -77,9 +195,33 @@
             render();
         }
 
+        function openSessionModal() {
+            document.getElementById('session-modal').classList.remove('hidden');
+            const now = new Date();
+            document.getElementById('s-date-m').innerHTML = Array.from({length:12},(_,i)=>i+1).map(m=>`<option value="${m}" ${now.getMonth()+1===m?'selected':''}>${m}月</option>`).join('');
+            document.getElementById('s-date-d').innerHTML = Array.from({length:31},(_,i)=>i+1).map(d=>`<option value="${d}" ${now.getDate()===d?'selected':''}>${d}日</option>`).join('');
+        }
+
+        function closeSessionModal() {
+            document.getElementById('session-modal').classList.add('hidden');
+            switchMode('orders'); // 強制跳回預定管理，避免停留在未開班的模式
+        }
+
+        function confirmSession() {
+            const m = document.getElementById('s-date-m').value;
+            const d = document.getElementById('s-date-d').value;
+            state.session.dayOfWeek = new Date(new Date().getFullYear(), m-1, d).getDay();
+            state.session.active = true;
+            state.session.date = `${m}/${d}`;
+            state.session.location = document.getElementById('s-loc').value;
+            document.getElementById('session-modal').classList.add('hidden');
+            document.getElementById('session-tag').classList.remove('hidden');
+            switchMode(state.tempMode || 'inventory');
+        }
+
         function render() {
             const app = document.getElementById('app'); app.innerHTML = '';
-            if (state.mode === 'inventory') renderInventory(app);
+            if (state.mode === 'inventory') renderProducts(app, state.inventory, 'inventory');
             else if (state.mode === 'factory') renderFactory(app);
             else if (state.mode === 'revenue') renderRevenue(app);
             else if (state.mode === 'orders') renderOrders(app);
@@ -87,84 +229,126 @@
             updateStat();
         }
 
-        function renderAnalysis(container) {
-            container.innerHTML = `
-                <div class="space-y-6">
-                    <div class="flex justify-between items-center mb-2 px-2">
-                        <h3 class="font-black text-slate-800 text-lg">2026年 4月 報表</h3>
-                        <span class="text-xs text-[#bfa07a] font-bold">查看歷史錄 <i class="fas fa-chevron-right ml-1"></i></span>
-                    </div>
-
-                    <div class="analysis-card p-6 shadow-sm border border-gray-100">
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">本月預估淨利</p>
-                        <h2 class="text-3xl font-black text-slate-800 mb-6">$ 0</h2>
-                        <div class="grid grid-cols-3 gap-4 border-t border-gray-100 pt-6">
-                            <div><p class="text-[9px] text-slate-400 font-bold mb-1">總營收</p><p class="font-black text-sm text-green-500">$ 0</p></div>
-                            <div><p class="text-[9px] text-slate-400 font-bold mb-1">總成本</p><p class="font-black text-sm text-amber-600">$ 0</p></div>
-                            <div><p class="text-[9px] text-slate-400 font-bold mb-1">總支出</p><p class="font-black text-sm text-red-400">$ 0</p></div>
+        function renderProducts(container, dataObj, modeType) {
+            let cat = '';
+            products.forEach((p, i) => {
+                if (p.cat !== cat) {
+                    cat = p.cat;
+                    container.innerHTML += `<h3 class="text-[11px] font-black text-slate-300 mb-3 mt-8 ml-2 uppercase tracking-[0.2em] border-l-4 border-amber-200 pl-2">【 ${cat.replace(/🥖 |🥯 |🍰 /g, '')} 】</h3>`;
+                }
+                container.innerHTML += `
+                    <div class="product-card p-4 flex items-center justify-between shadow-sm mb-3">
+                        <div class="flex-1">
+                            <div class="font-bold text-slate-700 underline decoration-slate-100 underline-offset-4">${p.name}<span class="unit-tag">${p.unit}</span></div>
+                            <p class="text-[10px] text-slate-300 mt-1">${modeType==='inventory'?'今日剩餘':'明日需求'}</p>
                         </div>
-                    </div>
-
-                    <div class="bg-white p-6 rounded-[30px] border border-gray-100 shadow-sm">
-                        <h4 class="font-black text-slate-700 mb-4 text-sm italic">📈 營運關鍵指標</h4>
-                        <div class="space-y-4">
-                            <div class="flex justify-between items-center bg-gray-50 p-3 rounded-2xl">
-                                <span class="text-xs font-bold text-slate-500">平均單日營收</span>
-                                <span class="font-black text-slate-700">$ 0</span>
-                            </div>
-                            <div class="flex justify-between items-center bg-gray-50 p-3 rounded-2xl">
-                                <span class="text-xs font-bold text-slate-500">最熱銷地點</span>
-                                <span class="font-black text-slate-700">尚未統計</span>
-                            </div>
+                        <div class="flex items-center bg-gray-50 rounded-xl p-1 border border-gray-100">
+                            <button onclick="changeQty('${modeType}', ${i}, -1)" class="stepper-btn shadow-sm active:bg-gray-100"><i class="fas fa-minus text-xs"></i></button>
+                            <div class="w-12 text-center font-black text-slate-700">${dataObj[i] || 0}</div>
+                            <button onclick="changeQty('${modeType}', ${i}, 1)" class="stepper-btn shadow-sm active:bg-gray-100"><i class="fas fa-plus text-xs"></i></button>
                         </div>
-                    </div>
-
-                    <div class="bg-amber-50/50 p-6 rounded-[30px] border border-amber-100">
-                        <h4 class="font-black text-amber-700 mb-2 text-sm">💡 庫存水位建議</h4>
-                        <p class="text-[11px] text-amber-600/80 leading-relaxed font-bold">累積數據中... 系統將在累積 3 次以上的出車數據後，自動為您分析基本貨量的調整建議。</p>
-                    </div>
-                </div>`;
+                    </div>`;
+            });
         }
 
-        // --- 以下為原有功能的穩定邏輯 ---
+        function renderBaseItemPicker() {
+            const day = document.getElementById('base-day-select').value;
+            const picker = document.getElementById('base-item-picker');
+            picker.innerHTML = '';
+            let cat = '';
+            let total = 0;
+            products.forEach((p, i) => {
+                if (p.cat !== cat) {
+                    cat = p.cat;
+                    picker.innerHTML += `<h3 class="text-[11px] font-black text-slate-300 mb-3 mt-6 ml-1 tracking-widest uppercase">【 ${cat.replace(/🥖 |🥯 |🍰 /g, '')} 】</h3>`;
+                }
+                const qty = state.baseOrders[day][i] || 0;
+                total += qty * p.price;
+                picker.innerHTML += `
+                    <div class="bg-gray-50 p-4 rounded-2xl flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-slate-600">${p.name}</span>
+                        <div class="flex items-center bg-white rounded-xl p-1 shadow-sm">
+                            <button onclick="changeBaseQty(${day}, ${i}, -1)" class="w-8 h-8 flex items-center justify-center text-[#bfa07a]"><i class="fas fa-minus text-[10px]"></i></button>
+                            <div class="w-10 text-center font-black text-slate-700 text-sm">${qty}</div>
+                            <button onclick="changeBaseQty(${day}, ${i}, 1)" class="w-8 h-8 flex items-center justify-center text-[#bfa07a]"><i class="fas fa-plus text-[10px]"></i></button>
+                        </div>
+                    </div>`;
+            });
+            document.getElementById('base-total').innerText = '$' + total.toLocaleString();
+        }
+
+        function changeBaseQty(day, i, d) {
+            state.baseOrders[day][i] = Math.max(0, (state.baseOrders[day][i] || 0) + d);
+            renderBaseItemPicker();
+        }
+
+        function changeQty(type, i, d) {
+            if(type === 'inventory') state.inventory[i] = Math.max(0, (state.inventory[i] || 0) + d);
+            else if(type === 'factory') state.factory[i] = Math.max(0, (state.factory[i] || 0) + d);
+            else if(type === 'draft') {
+                state.orderDraft[i] = Math.max(0, (state.orderDraft[i] || 0) + d);
+                document.getElementById(`draft-qty-${i}`).innerText = state.orderDraft[i];
+            }
+            render();
+        }
+
+        // 其他功能邏輯保持...
+        function openBaseOrderModal() { document.getElementById('base-order-modal').classList.remove('hidden'); renderBaseItemPicker(); }
+        function closeBaseOrderModal() { document.getElementById('base-order-modal').classList.add('hidden'); render(); }
+        function toggleOtherLoc() { document.getElementById('o-loc-other').classList.toggle('hidden', document.getElementById('o-loc-select').value !== '其他'); }
+        function closeOrderModal() { document.getElementById('order-modal').classList.add('hidden'); }
+        function handleMainAction() { alert('數據鎖定成功，今日結算已存檔。'); }
+
         function renderFactory(container) {
-            if(!state.targetOrderDate) { const tom = new Date(); tom.setDate(tom.getDate()+1); state.targetOrderDate = `${tom.getMonth()+1}/${tom.getDate()}`; }
+            const tom = new Date(); tom.setDate(tom.getDate()+1);
+            if(!state.targetOrderDate) state.targetOrderDate = `${tom.getMonth()+1}/${tom.getDate()}`;
             const [m, d] = state.targetOrderDate.split('/'); const targetDay = new Date(new Date().getFullYear(), m-1, d).getDay(); const isRegular = [0, 2, 4].includes(targetDay);
-            container.innerHTML = `<div class="bg-slate-800 p-6 rounded-[30px] mb-6 shadow-xl text-white"><div class="flex justify-between mb-4"><span class="text-xs font-bold text-slate-400">下單標的日</span><div class="bg-red-500 text-[10px] px-2 py-0.5 rounded-full animate-pulse">11:00 截單</div></div><div class="flex gap-2 mb-4"><select id="f-date-m" onchange="updateTargetDate()" class="bg-slate-700 text-white flex-1"></select><select id="f-date-d" onchange="updateTargetDate()" class="bg-slate-700 text-white flex-1"></select></div><div class="text-center bg-white/10 p-3 rounded-2xl"><p class="text-[11px] font-bold ${isRegular?'text-amber-300':'text-slate-300'}">${state.targetOrderDate} (週${['日','一','二','三','四','五','六'][targetDay]}) ${isRegular?'【出車日】':'【非出車日】'}</p></div></div><div id="factory-list-container"></div>`;
-            const ms = Array.from({length:12},(_,i)=>i+1), ds = Array.from({length:31},(_,i)=>i+1);
-            document.getElementById('f-date-m').innerHTML = ms.map(v=>`<option value="${v}" ${v==m?'selected':''}>${v}月</option>`).join('');
-            document.getElementById('f-date-d').innerHTML = ds.map(v=>`<option value="${v}" ${v==d?'selected':''}>${v}日</option>`).join('');
-            renderFactoryItems(document.getElementById('factory-list-container'), targetDay);
+            container.innerHTML = `<div class="bg-slate-800 p-6 rounded-[30px] mb-6 shadow-xl text-white"><div class="flex justify-between mb-4"><span class="text-xs font-bold text-slate-400 italic">下單日期對位</span><div class="bg-red-500 text-[10px] px-2 py-0.5 rounded-full animate-pulse">11:00 截單時限</div></div><div class="grid grid-cols-2 gap-2 mb-4"><select id="f-date-m" onchange="updateTargetDate()" class="bg-slate-700 text-white"></select><select id="f-date-d" onchange="updateTargetDate()" class="bg-slate-700 text-white"></select></div><div class="text-center bg-white/10 p-3 rounded-2xl"><p class="text-[11px] font-black ${isRegular?'text-amber-300':'text-slate-400'}">${state.targetOrderDate} (週${['日','一','二','三','四','五','六'][targetDay]}) ${isRegular?'【出車日】':'【非出車日】'}</p></div></div><div id="factory-list"></div>`;
+            Array.from({length:12},(_,i)=>i+1).forEach(v => document.getElementById('f-date-m').innerHTML += `<option value="${v}" ${v==m?'selected':''}>${v}月</option>`);
+            Array.from({length:31},(_,i)=>i+1).forEach(v => document.getElementById('f-date-d').innerHTML += `<option value="${v}" ${v==d?'selected':''}>${v}日</option>`);
+            renderFactoryItems(document.getElementById('factory-list'), targetDay);
         }
         function renderFactoryItems(container, dayOfWeek) {
             let cat = ''; products.forEach((p, i) => {
                 const base = state.baseOrders[dayOfWeek][i] || 0; let oSum = 0; state.orders.forEach(o => { if(o.date === state.targetOrderDate) o.items.forEach(it => { if(it.name === p.name) oSum += it.qty; }); });
                 const inv = state.inventory[i] || 0, suggest = Math.max(0, (base + oSum) - inv);
-                if (p.cat !== cat) { cat = p.cat; container.innerHTML += `<h3 class="text-[10px] font-black text-slate-300 mb-2 mt-6 ml-2 uppercase tracking-widest">${cat}</h3>`; }
-                container.innerHTML += `<div class="product-card p-4 flex items-center justify-between shadow-sm mb-3 ${suggest>0?'bg-amber-50/20 border-l-4 border-l-amber-400':''}"><div class="flex-1"><div class="font-bold text-slate-700">${p.name}</div><p class="text-[9px] text-slate-400 mt-1">基本:${base}+預定:${oSum}-剩餘:${inv}</p></div><div class="flex items-center bg-white rounded-xl p-1 shadow-inner border border-gray-100"><button onclick="changeFactoryQty(${i},-1)" class="stepper-btn"><i class="fas fa-minus"></i></button><div class="w-12 text-center font-black text-slate-700 text-lg">${state.factory[i] === undefined ? suggest : state.factory[i]}</div><button onclick="changeFactoryQty(${i},1)" class="stepper-btn"><i class="fas fa-plus"></i></button></div></div>`;
+                if (p.cat !== cat) { cat = p.cat; container.innerHTML += `<h3 class="text-[11px] font-black text-slate-300 mb-3 mt-8 ml-2 uppercase tracking-widest border-l-4 border-amber-200 pl-2">【 ${cat.replace(/🥖 |🥯 |🍰 /g, '')} 】</h3>`; }
+                container.innerHTML += `<div class="product-card p-4 flex items-center justify-between mb-3 ${suggest>0?'bg-amber-50/20 border-l-4 border-l-amber-400':''}"><div class="flex-1"><div class="font-bold text-slate-700">${p.name}</div><p class="text-[9px] text-slate-400 mt-1">基本:${base}+預定:${oSum}-剩餘:${inv}</p></div><div class="flex items-center bg-white rounded-xl p-1 shadow-inner border border-gray-100"><button onclick="changeQty('factory',${i},-1)" class="stepper-btn"><i class="fas fa-minus text-xs"></i></button><div class="w-12 text-center font-black text-slate-700 text-lg">${state.factory[i] === undefined ? suggest : state.factory[i]}</div><button onclick="changeQty('factory',${i},1)" class="stepper-btn"><i class="fas fa-plus text-xs"></i></button></div></div>`;
                 if(state.factory[i] === undefined) state.factory[i] = suggest;
             });
         }
         function updateTargetDate() { state.targetOrderDate = `${document.getElementById('f-date-m').value}/${document.getElementById('f-date-d').value}`; state.factory = {}; render(); }
-        function changeFactoryQty(i, d) { state.factory[i] = Math.max(0, (state.factory[i] || 0) + d); updateStat(); document.querySelectorAll('.product-card .w-12')[i].innerText = state.factory[i]; }
-        function renderInventory(container) { let cat = ''; products.forEach((p, i) => { if (p.cat !== cat) { cat = p.cat; container.innerHTML += `<h3 class="text-[10px] font-black text-slate-300 mb-2 mt-6 ml-2 uppercase tracking-widest">${cat}</h3>`; } container.innerHTML += `<div class="product-card p-4 flex items-center justify-between shadow-sm mb-3"><div class="flex-1"><div class="font-bold text-slate-700 underline decoration-[#bfa07a]/30">${p.name}<span class="unit-tag">${p.unit}</span></div><p class="text-[10px] text-slate-300 mt-1">單價 $${p.price}</p></div><div class="flex items-center bg-gray-50 rounded-xl p-1 border border-gray-100"><button onclick="changeQty(${i},-1)" class="stepper-btn active:bg-gray-100 shadow-sm"><i class="fas fa-minus"></i></button><div class="w-12 text-center font-black text-slate-700">${state.inventory[i] || 0}</div><button onclick="changeQty(${i},1)" class="stepper-btn active:bg-gray-100 shadow-sm"><i class="fas fa-plus"></i></button></div></div>`; }); }
-        function openSessionModal() { document.getElementById('session-modal').classList.remove('hidden'); const now = new Date(); document.getElementById('s-date-m').innerHTML = Array.from({length:12},(_,i)=>i+1).map(m=>`<option value="${m}" ${now.getMonth()+1===m?'selected':''}>${m}月</option>`).join(''); document.getElementById('s-date-d').innerHTML = Array.from({length:31},(_,i)=>i+1).map(d=>`<option value="${d}" ${now.getDate()===d?'selected':''}>${d}日</option>`).join(''); }
-        function confirmSession() { const m = document.getElementById('s-date-m').value, d = document.getElementById('s-date-d').value; state.session.dayOfWeek = new Date(new Date().getFullYear(), m-1, d).getDay(); state.session.active = true; state.session.date = `${m}/${d}`; state.session.location = document.getElementById('s-loc').value; document.getElementById('session-modal').classList.add('hidden'); document.getElementById('session-tag').classList.remove('hidden'); switchMode(state.tempMode || 'inventory'); }
-        function renderBaseItemPicker() { const d = document.getElementById('base-day-select').value, pkr = document.getElementById('base-item-picker'); pkr.innerHTML = products.map((p, i) => `<div class="flex justify-between items-center p-3 bg-gray-50 rounded-xl mb-1"><span class="text-xs font-bold text-slate-600">${p.name}</span><input type="number" onchange="state.baseOrders[${d}][${i}]=Number(this.value)" value="${state.baseOrders[d][i]||0}" class="w-12 text-center border-b border-amber-300 outline-none font-bold bg-transparent text-sm"></div>`).join(''); }
-        function openBaseOrderModal() { document.getElementById('base-order-modal').classList.remove('hidden'); renderBaseItemPicker(); }
-        function closeBaseOrderModal() { document.getElementById('base-order-modal').classList.add('hidden'); render(); }
-        function changeQty(i, d) { state.inventory[i] = Math.max(0, (state.inventory[i] || 0) + d); render(); }
-        function renderRevenue(container) { container.innerHTML = `<div class="space-y-6"><div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm"><div class="flex justify-between items-center mb-4"><h3 class="text-xs font-black text-[#bfa07a] uppercase tracking-widest">營收紀錄</h3><span class="text-[10px] bg-slate-100 px-2 py-1 rounded font-bold">${state.session.date} @ ${state.session.location}</span></div><div class="grid grid-cols-2 gap-4"><input type="number" id="rev-cash" oninput="saveRev()" placeholder="現金" value="${state.revenue.cash||''}" class="bg-gray-50 p-4 rounded-2xl font-bold outline-none"><input type="number" id="rev-lp" oninput="saveRev()" placeholder="LinePay" value="${state.revenue.lp||''}" class="bg-gray-50 p-4 rounded-2xl font-bold outline-none"></div></div><div class="bg-amber-50/30 p-6 rounded-3xl border border-amber-100"><div class="flex justify-between mb-4"><h3 class="text-xs font-black text-amber-600 uppercase tracking-widest">貨款成本</h3><span id="discount-tag" class="text-[10px] font-bold"></span></div><input type="number" id="rev-cost-raw" oninput="saveRev()" placeholder="貨款原價總額" value="${state.revenue.costRaw||''}" class="w-full bg-white p-4 rounded-2xl font-black text-amber-700 border border-amber-100 outline-none"></div><div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm"><h3 class="text-xs font-black text-red-400 uppercase tracking-widest mb-4">支出項目</h3><div class="grid grid-cols-2 gap-3"><input type="number" id="exp-fuel" oninput="saveRev()" placeholder="加油" value="${state.revenue.fuel||''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none"><input type="number" id="exp-rent" oninput="saveRev()" placeholder="餐車租金" value="${state.revenue.rent||''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none"><input type="number" id="exp-elec" oninput="saveRev()" placeholder="電費" value="${state.revenue.elec||''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none"><input type="number" id="exp-etc" oninput="saveRev()" placeholder="ETC" value="${state.revenue.etc||''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none"><input type="number" id="exp-other" oninput="saveRev()" placeholder="其他支出" value="${state.revenue.other||''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none col-span-2"></div></div></div>`; saveRev(); }
-        function renderOrders(container) { container.innerHTML = `<button onclick="openOrderModal()" class="w-full bg-[#bfa07a] text-white py-4 rounded-2xl font-bold shadow-lg flex items-center justify-center gap-2 mb-6"><i class="fas fa-plus-circle"></i> 新增預定單</button><div class="space-y-3">${state.orders.length===0?'<p class="text-center text-slate-400 py-10 font-bold">目前無訂單紀錄</p>':state.orders.map((o,idx)=>`<div class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm relative"><button onclick="state.orders.splice(${idx},1);render();" class="absolute top-4 right-4 text-slate-200"><i class="fas fa-times"></i></button><div class="flex justify-between items-start pr-6"><div><span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded-md font-bold">${o.date} ${o.time}</span><h4 class="font-black text-slate-700 mt-1">${o.name} (${o.phone})</h4></div><span class="text-amber-600 font-black text-lg">$${o.total}</span></div><div class="text-[11px] text-slate-400 my-2 font-bold"><i class="fas fa-map-marker-alt mr-1"></i>${o.location}</div><div class="border-t border-dashed border-gray-100 pt-2 text-xs text-slate-500 font-bold">${o.items.map(i=>`${i.name}x${i.qty}`).join('、')}</div></div>`).join('')}</div>`; }
-        function updateStat() { const val = document.getElementById('stat-value'), lab = document.getElementById('stat-label'); if (state.mode === 'inventory') { let t = 0; products.forEach((p, i) => t += (state.inventory[i] || 0) * p.price); val.innerText = '$' + t.toLocaleString(); lab.innerText = '結算價值'; } else if (state.mode === 'factory') { let q = 0; Object.values(state.factory).forEach(v => q += v); val.innerText = q + ' 件'; lab.innerText = '建議叫貨總數'; } else if (state.mode === 'revenue') { const disc = state.revenue.costRaw >= 12000 ? 0.5 : 0.55; const net = (state.revenue.cash + state.revenue.lp) - (state.revenue.costRaw * disc) - (state.revenue.fuel + state.revenue.rent + state.revenue.elec + state.revenue.etc + state.revenue.other); val.innerText = '$' + Math.round(net).toLocaleString(); lab.innerText = '純利預估'; if(document.getElementById('discount-tag')) document.getElementById('discount-tag').innerText = `適用 ${disc*10} 折`; } else if (state.mode === 'orders') { let t = 0; state.orders.forEach(o => t += o.total); val.innerText = '$' + t.toLocaleString(); lab.innerText = '總訂單額'; } else if (state.mode === 'analysis') { val.innerText = 'BETA'; lab.innerText = '數據統計中'; } }
-        function openOrderModal() { state.orderDraft = {}; document.getElementById('order-modal').classList.remove('hidden'); const p = document.getElementById('order-item-picker'); p.innerHTML = products.map((prod, i) => `<div class="product-card p-3 flex items-center justify-between mb-2 shadow-none border border-gray-50"><span class="text-xs font-bold text-slate-600">${prod.name}</span><div class="flex items-center bg-gray-50 rounded-xl p-1"><button onclick="changeOrderDraftQty(${i},-1)" class="w-8 h-8 bg-white rounded-lg shadow-sm text-[#bfa07a]"><i class="fas fa-minus text-xs"></i></button><div id="draft-qty-${i}" class="w-10 text-center font-black text-slate-700">0</div><button onclick="changeOrderDraftQty(${i},1)" class="w-8 h-8 bg-white rounded-lg shadow-sm text-[#bfa07a]"><i class="fas fa-plus text-xs"></i></button></div></div>`).join(''); const now = new Date(); document.getElementById('o-date-m').innerHTML = Array.from({length:12},(_,i)=>i+1).map(m=>`<option value="${m}" ${now.getMonth()+1===m?'selected':''}>${m}月</option>`).join(''); document.getElementById('o-date-d').innerHTML = Array.from({length:31},(_,i)=>i+1).map(d=>`<option value="${d}" ${now.getDate()===d?'selected':''}>${d}日</option>`).join(''); document.getElementById('o-time-h').innerHTML = Array.from({length:24},(_,i)=>(i<10?'0':'')+i).map(h=>`<option value="${h}">${h}點</option>`).join(''); document.getElementById('o-time-m').innerHTML = Array.from({length:60},(_,i)=>(i<10?'0':'')+i).map(m=>`<option value="${m}">${m}分</option>`).join(''); }
-        function saveNewOrder() { const its = []; let t = 0; products.forEach((p, i) => { const q = state.orderDraft[i] || 0; if (q > 0) { its.push({ name: p.name, qty: q }); t += p.price * q; } }); const selLoc = document.getElementById('o-loc-select').value, finalLoc = selLoc === '其他' ? document.getElementById('o-loc-other').value : selLoc; state.orders.push({ date: `${document.getElementById('o-date-m').value}/${document.getElementById('o-date-d').value}`, time: `${document.getElementById('o-time-h').value}:${document.getElementById('o-time-m').value}`, name: document.getElementById('o-name').value, phone: document.getElementById('o-phone').value, location: finalLoc, note: document.getElementById('o-note').value, items: its, total: t }); closeOrderModal(); render(); }
-        function toggleOtherLoc() { document.getElementById('o-loc-other').classList.toggle('hidden', document.getElementById('o-loc-select').value !== '其他'); }
-        function closeOrderModal() { document.getElementById('order-modal').classList.add('hidden'); }
-        function changeOrderDraftQty(i, d) { state.orderDraft[i] = Math.max(0, (state.orderDraft[i] || 0) + d); document.getElementById(`draft-qty-${i}`).innerText = state.orderDraft[i]; }
+        function renderRevenue(container) { container.innerHTML = `<div class="space-y-6"><div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm"><div class="flex justify-between items-center mb-4"><h3 class="text-xs font-black text-[#bfa07a] uppercase tracking-widest">當日營收</h3><span class="text-[10px] bg-slate-100 px-2 py-1 rounded font-bold">${state.session.date} @ ${state.session.location}</span></div><div class="grid grid-cols-2 gap-4"><input type="number" id="rev-cash" oninput="saveRev()" placeholder="現金收入" value="${state.revenue.cash||''}" class="bg-gray-50 p-4 rounded-2xl font-bold outline-none"><input type="number" id="rev-lp" oninput="saveRev()" placeholder="LinePay" value="${state.revenue.lp||''}" class="bg-gray-50 p-4 rounded-2xl font-bold outline-none"></div></div><div class="bg-amber-50/30 p-6 rounded-3xl border border-amber-100"><div class="flex justify-between mb-4"><h3 class="text-xs font-black text-amber-600 uppercase">貨款成本</h3><span id="discount-tag" class="text-[10px] font-bold"></span></div><input type="number" id="rev-cost-raw" oninput="saveRev()" placeholder="總原價" value="${state.revenue.costRaw||''}" class="w-full bg-white p-4 rounded-2xl font-black text-amber-700 outline-none border border-amber-100"></div><div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm"><h3 class="text-xs font-black text-red-400 uppercase mb-4">支出明細</h3><div class="grid grid-cols-2 gap-3"><input type="number" id="exp-fuel" oninput="saveRev()" placeholder="加油" value="${state.revenue.fuel||''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none"><input type="number" id="exp-rent" oninput="saveRev()" placeholder="餐車租金" value="${state.revenue.rent||''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none"><input type="number" id="exp-elec" oninput="saveRev()" placeholder="電費" value="${state.revenue.elec||''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none"><input type="number" id="exp-etc" oninput="saveRev()" placeholder="ETC" value="${state.revenue.etc||''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none"><input type="number" id="exp-other" oninput="saveRev()" placeholder="其他" value="${state.revenue.other||''}" class="bg-gray-50 p-3 rounded-xl text-sm outline-none col-span-2"></div></div></div>`; saveRev(); }
+        function renderOrders(container) { container.innerHTML = `<button onclick="openOrderModal()" class="w-full bg-[#bfa07a] text-white py-4 rounded-2xl font-bold shadow-lg flex items-center justify-center gap-2 mb-6"><i class="fas fa-plus-circle"></i> 新增預定單</button><div class="space-y-3">${state.orders.length===0?'<p class="text-center text-slate-400 py-10 font-bold italic">目前無訂單紀錄</p>':state.orders.map((o,idx)=>`<div class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm relative"><button onclick="state.orders.splice(${idx},1);render();" class="absolute top-4 right-4 text-slate-200"><i class="fas fa-times text-lg"></i></button><div class="flex justify-between items-start pr-6"><div><span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded-md font-bold italic">${o.date} ${o.time}</span><h4 class="font-black text-slate-700 mt-1 uppercase">${o.name} (${o.phone})</h4></div><span class="text-amber-600 font-black text-lg">$${o.total}</span></div><div class="text-[11px] text-slate-400 my-2 font-bold"><i class="fas fa-map-marker-alt mr-1"></i>${o.location}</div><div class="border-t border-dashed border-gray-100 pt-2 text-[11px] text-slate-500 font-bold">${o.items.map(i=>`${i.name}x${i.qty}`).join('、')}</div></div>`).join('')}</div>`; }
+        function renderAnalysis(container) { container.innerHTML = `<div class="p-8 text-center"><i class="fas fa-chart-pie text-4xl text-slate-200 mb-4"></i><p class="text-slate-400 font-bold italic">營業分析模組正在準備中...<br>累積 3 次結算後開啟數據分析</p></div>`; }
+        function openOrderModal() {
+            state.orderDraft = {}; document.getElementById('order-modal').classList.remove('hidden');
+            const picker = document.getElementById('order-item-picker'); picker.innerHTML = '';
+            let cat = '';
+            products.forEach((p, i) => {
+                if (p.cat !== cat) { cat = p.cat; picker.innerHTML += `<h3 class="text-[10px] font-black text-slate-300 mb-2 mt-4 tracking-widest italic border-b border-gray-100 pb-1">【 ${cat.replace(/🥖 |🥯 |🍰 /g, '')} 】</h3>`; }
+                picker.innerHTML += `<div class="bg-white p-3 rounded-2xl flex items-center justify-between shadow-sm border border-gray-50"><span class="text-xs font-bold text-slate-600">${p.name}</span><div class="flex items-center bg-gray-50 rounded-xl p-1"><button onclick="changeQty('draft',${i},-1)" class="w-8 h-8 flex items-center justify-center text-[#bfa07a]"><i class="fas fa-minus text-[10px]"></i></button><div id="draft-qty-${i}" class="w-8 text-center font-black text-slate-700 text-sm">0</div><button onclick="changeQty('draft',${i},1)" class="w-8 h-8 flex items-center justify-center text-[#bfa07a]"><i class="fas fa-plus text-[10px]"></i></button></div></div>`;
+            });
+            const now = new Date();
+            Array.from({length:12},(_,i)=>i+1).forEach(v => document.getElementById('o-date-m').innerHTML += `<option value="${v}" ${v==now.getMonth()+1?'selected':''}>${v}月</option>`);
+            Array.from({length:31},(_,i)=>i+1).forEach(v => document.getElementById('o-date-d').innerHTML += `<option value="${v}" ${v==now.getDate()?'selected':''}>${v}日</option>`);
+            Array.from({length:24},(_,i)=>i).forEach(v => document.getElementById('o-time-h').innerHTML += `<option value="${v}">${v<10?'0'+v:v}點</option>`);
+            Array.from({length:60},(_,i)=>i).forEach(v => document.getElementById('o-time-m').innerHTML += `<option value="${v}">${v<10?'0'+v:v}分</option>`);
+        }
+        function saveNewOrder() {
+            const its = []; let t = 0; products.forEach((p, i) => { const q = state.orderDraft[i] || 0; if (q > 0) { its.push({ name: p.name, qty: q }); t += p.price * q; } });
+            const selLoc = document.getElementById('o-loc-select').value, finalLoc = selLoc === '其他' ? document.getElementById('o-loc-other').value : selLoc;
+            state.orders.push({ date: `${document.getElementById('o-date-m').value}/${document.getElementById('o-date-d').value}`, time: `${document.getElementById('o-time-h').value}:${document.getElementById('o-time-m').value}`, name: document.getElementById('o-name').value, phone: document.getElementById('o-phone').value, location: finalLoc, items: its, total: t });
+            closeOrderModal(); render();
+        }
         function saveRev() { if(state.mode !== 'revenue') return; state.revenue = { cash: Number(document.getElementById('rev-cash').value)||0, lp: Number(document.getElementById('rev-lp').value)||0, costRaw: Number(document.getElementById('rev-cost-raw').value)||0, fuel: Number(document.getElementById('exp-fuel').value)||0, rent: Number(document.getElementById('exp-rent').value)||0, elec: Number(document.getElementById('exp-elec').value)||0, etc: Number(document.getElementById('exp-etc').value)||0, other: Number(document.getElementById('exp-other').value)||0 }; updateStat(); }
-        function handleMainAction() { alert('今日結算存檔成功！'); }
-        
+        function updateStat() {
+            const val = document.getElementById('stat-value'), lab = document.getElementById('stat-label');
+            if (state.mode === 'inventory') { let t = 0; products.forEach((p, i) => t += (state.inventory[i] || 0) * p.price); val.innerText = '$' + t.toLocaleString(); lab.innerText = '總值分析'; }
+            else if (state.mode === 'factory') { let q = 0; Object.values(state.factory).forEach(v => q += v); val.innerText = q + ' 件'; lab.innerText = '建議叫貨量'; }
+            else if (state.mode === 'revenue') { const disc = state.revenue.costRaw >= 12000 ? 0.5 : 0.55; const net = (state.revenue.cash + state.revenue.lp) - (state.revenue.costRaw * disc) - (state.revenue.fuel + state.revenue.rent + state.revenue.elec + state.revenue.etc + state.revenue.other); val.innerText = '$' + Math.round(net).toLocaleString(); lab.innerText = '預估淨利'; if(document.getElementById('discount-tag')) document.getElementById('discount-tag').innerText = `適用 ${disc*10} 折`; }
+            else if (state.mode === 'orders') { let t = 0; state.orders.forEach(o => t += o.total); val.innerText = '$' + t.toLocaleString(); lab.innerText = '總訂單營業額'; }
+        }
         switchMode('orders');
     </script>
 </body>
