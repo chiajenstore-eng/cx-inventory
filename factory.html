@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>埕心 Select | 工廠供貨端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #fcfaf7; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
+        .submit-btn { background: linear-gradient(135deg, #bfa07a 0%, #a68a64 100%); box-shadow: 0 10px 20px rgba(191, 160, 122, 0.3); }
+        select { -webkit-appearance: none; appearance: none; background: #f9f9f9; border: none; padding: 10px; border-radius: 15px; font-weight: bold; color: #333; width: 100%; text-align: center; text-align-last: center; border: 1px solid #eee; outline: none; }
+        .loading-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center; color:white; font-weight:bold; flex-direction: column; gap: 15px; }
+        
+        /* 勾選卡片樣式 */
+        .item-active { background-color: #f0fdf4; border: 1.5px solid #22c55e; color: #166534; }
+        .item-inactive { background-color: #fff; border: 1.5px solid #eee; color: #cbd5e1; }
+    </style>
+</head>
+<body class="pb-36">
+    <div id="loading" class="loading-overlay"><div class="animate-spin text-4xl"><i class="fas fa-sync-alt"></i></div><span>菜單同步至雲端中...</span></div>
+
+    <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 px-6 py-5 flex justify-between items-center shadow-sm">
+        <div>
+            <div class="flex items-center gap-2">
+                <h1 class="text-2xl font-black text-slate-800 italic uppercase tracking-tighter">【 埕心 Select 】</h1>
+            </div>
+            <p id="current-mode-title" class="text-[10px] text-slate-400 font-bold mt-1 tracking-widest uppercase">工廠供貨系統</p>
+        </div>
+    </header>
+
+    <div id="app" class="p-4">
+        <div class="bg-slate-800 p-6 rounded-[30px] mb-6 shadow-xl text-white text-center">
+            <p class="text-[10px] font-black text-slate-400 mb-3 tracking-widest uppercase italic">請選擇出貨日期</p>
+            <div class="grid grid-cols-2 gap-2 mb-4">
+                <select id="f-date-m" onchange="updateTargetDate()" class="bg-slate-700 text-white text-center"></select>
+                <select id="f-date-d" onchange="updateTargetDate()" class="bg-slate-700 text-white text-center"></select>
+            </div>
+            <div class="flex justify-center gap-3 mt-4 border-t border-white/10 pt-4">
+                <button onclick="selectAll(true)" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl font-bold text-xs transition-all"><i class="fas fa-check-square mr-1"></i>全選</button>
+                <button onclick="selectAll(false)" class="bg-white/10 hover:bg-white/20 text-slate-300 px-4 py-2 rounded-xl font-bold text-xs transition-all"><i class="far fa-square mr-1"></i>全不選</button>
+            </div>
+        </div>
+
+        <div id="menu-list"></div>
+    </div>
+
+    <div id="action-bar" class="fixed bottom-6 left-0 right-0 px-6 z-40">
+        <button onclick="submitMenu()" class="submit-btn w-full py-4 rounded-2xl text-white font-bold text-lg flex items-center justify-center gap-3 active:scale-95 transition-transform">
+            <i class="fas fa-cloud-upload-alt"></i> 確認送出今日菜單
+        </button>
+    </div>
+
+    <script>
+        // 💡 已經綁定你的專屬 API 網址
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwp4IDM-5t2ioYi01csJEMObobpEO-kSsw4E8IOuhKS3As4SA1YfrW3t6DEOlx3vJwkSg/exec';
+
+        const products=[{cat:"🥖 麵包區",name:"黃金牛角"},{cat:"🥖 麵包區",name:"原味小菠蘿"},{cat:"🥖 麵包區",name:"奶酥菠蘿"},{cat:"🥖 麵包區",name:"芋頭菠蘿"},{cat:"🥖 麵包區",name:"菠蘿金牛角"},{cat:"🥖 麵包區",name:"楓糖小可頌"},{cat:"🥖 麵包區",name:"鹽花可頌"},{cat:"🥖 麵包區",name:"蘋果派"},{cat:"🥖 麵包區",name:"巧克力大理石"},{cat:"🥖 麵包區",name:"可可麵包捲"},{cat:"🥖 麵包區",name:"奶香小餐包"},{cat:"🥖 麵包區",name:"黃金小羅宋"},{cat:"🥖 麵包區",name:"北海道鮮奶"},{cat:"🥖 麵包區",name:"奶酥小炸彈"},{cat:"🥖 麵包區",name:"牛奶克林姆"},{cat:"🥖 麵包區",name:"咖啡麵包"},{cat:"🥖 麵包區",name:"紅豆麵包"},{cat:"🥖 麵包區",name:"肉鬆麵包"},{cat:"🥖 麵包區",name:"台式肉鬆蔥捲"},{cat:"🥖 麵包區",name:"明太子法國麵包"},{cat:"🥖 麵包區",name:"香蒜法國麵包"},{cat:"🥖 麵包區",name:"香蒜金磚吐司"},{cat:"🥖 麵包區",name:"德腸夏威夷"},{cat:"🥖 麵包區",name:"可可爆漿菠蘿"},{cat:"🥖 麵包區",name:"巧克力QQ球"},{cat:"🥖 麵包區",name:"蔓越莓雜糧"},{cat:"🥖 麵包區",name:"優格蔓越莓"},{cat:"🥖 麵包區",name:"肉桂核桃捲"},{cat:"🥖 麵包區",name:"千層牛奶棒"},{cat:"🥖 麵包區",name:"蜂蜜起酥蛋糕"},{cat:"🥖 麵包區",name:"QQ布丁麵包"},{cat:"🥯 貝果、吐司區",name:"原味軟貝果"},{cat:"🥯 貝果、吐司區",name:"火龍果乳酪貝果"},{cat:"🥯 貝果、吐司區",name:"巧克力貝果"},{cat:"🥯 貝果、吐司區",name:"藍莓抹醬貝果"},{cat:"🥯 貝果、吐司區",name:"三色厚片吐司"},{cat:"🥯 貝果、吐司區",name:"千層小吐司"},{cat:"🍰 蛋糕點心區",name:"花瓣檸檬塔"},{cat:"🍰 蛋糕點心區",name:"台式小蛋塔"},{cat:"🍰 蛋糕點心區",name:"蛋糕捲 (巧克力)"},{cat:"🍰 蛋糕點心區",name:"蛋糕捲 (草莓)"},{cat:"🍰 蛋糕點心區",name:"蛋糕捲 (芋頭)"},{cat:"🍰 蛋糕點心區",name:"蛋糕捲 (香草)"},{cat:"🍰 蛋糕點心區",name:"檸檬小蛋糕"},{cat:"🍰 蛋糕點心區",name:"草莓小蛋糕"},{cat:"🍰 蛋糕點心區",name:"檸檬布丁塔"},{cat:"🍰 蛋糕點心區",name:"冰心泡芙 (巧克力)"},{cat:"🍰 蛋糕點心區",name:"冰心泡芙 (草莓)"},{cat:"🍰 蛋糕點心區",name:"冰心泡芙 (卡士達)"},{cat:"🍰 蛋糕點心區",name:"生乳餐包"},{cat:"🍰 蛋糕點心區",name:"卡士達冰心可頌"},{cat:"🍰 蛋糕點心區",name:"紅豆麻糬"},{cat:"🍰 蛋糕點心區",name:"台式馬卡龍 (原味)"},{cat:"🍰 蛋糕點心區",name:"台式馬卡龍 (巧克力)"},{cat:"🍰 蛋糕點心區",name:"台式馬卡龍 (草莓)"},{cat:"🍰 蛋糕點心區",name:"珍珠糖泡芙餅乾"},{cat:"🍰 蛋糕點心區",name:"法式奶油球 (巧克力)"},{cat:"🍰 蛋糕點心區",name:"法式奶油球 (草莓)"},{cat:"🍰 蛋糕點心區",name:"法式奶油球 (原味)"},{cat:"🍰 蛋糕點心區",name:"肉鬆芋頭小貝"},{cat:"🍰 蛋糕點心區",name:"帕瑪森起士棒"}];
+
+        // 預設將所有品項加入已選清單
+        let state = {
+            targetDate: '',
+            selectedItems: new Set(products.map(p => p.name))
+        };
+
+        function initDate() {
+            const tom = new Date(); tom.setDate(tom.getDate() + 1);
+            const m = tom.getMonth() + 1; const d = tom.getDate();
+            state.targetDate = `${m}/${d}`;
+
+            const ms = Array.from({length:12},(_,i)=>i+1), ds = Array.from({length:31},(_,i)=>i+1);
+            document.getElementById('f-date-m').innerHTML = ms.map(v=>`<option value="${v}" ${v==m?'selected':''}>${v}月</option>`).join('');
+            document.getElementById('f-date-d').innerHTML = ds.map(v=>`<option value="${v}" ${v==d?'selected':''}>${v}日</option>`).join('');
+        }
+
+        function updateTargetDate() {
+            state.targetDate = `${document.getElementById('f-date-m').value}/${document.getElementById('f-date-d').value}`;
+        }
+
+        function toggleItem(name) {
+            if (state.selectedItems.has(name)) {
+                state.selectedItems.delete(name);
+            } else {
+                state.selectedItems.add(name);
+            }
+            renderMenu();
+        }
+
+        function selectAll(isSelect) {
+            if(isSelect) {
+                state.selectedItems = new Set(products.map(p => p.name));
+            } else {
+                state.selectedItems.clear();
+            }
+            renderMenu();
+        }
+
+        function renderMenu() {
+            const container = document.getElementById('menu-list');
+            container.innerHTML = '';
+            let cat = '';
+            
+            products.forEach(p => {
+                if (p.cat !== cat) {
+                    cat = p.cat;
+                    container.innerHTML += `<h3 class="text-[11px] font-black text-slate-400 mb-2 mt-6 ml-2 uppercase tracking-widest border-l-4 border-slate-300 pl-2">【 ${cat.replace(/🥖 |🥯 |🍰 /g, '')} 】</h3>`;
+                }
+                
+                const isActive = state.selectedItems.has(p.name);
+                const activeClass = isActive ? 'item-active' : 'item-inactive';
+                const iconClass = isActive ? 'fa-check-circle text-green-500' : 'fa-circle text-slate-200';
+                
+                container.innerHTML += `
+                    <div onclick="toggleItem('${p.name}')" class="p-4 rounded-2xl flex justify-between items-center mb-2 shadow-sm transition-all active:scale-95 cursor-pointer ${activeClass}">
+                        <span class="font-bold ${isActive ? 'text-green-800' : 'text-slate-400'}">${p.name}</span>
+                        <i class="fas ${iconClass} text-xl transition-all"></i>
+                    </div>`;
+            });
+        }
+
+        async function submitMenu() {
+            if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes('貼上')) {
+                alert("API 尚未設定！"); return;
+            }
+            
+            const itemsArray = Array.from(state.selectedItems);
+            if(itemsArray.length === 0) {
+                if(!confirm("你目前沒有選擇任何品項，代表這天工廠休息不供貨，確定要送出嗎？")) return;
+            }
+
+            document.getElementById('loading').style.display = 'flex';
+            try {
+                const payload = { 
+                    targetSheet: "DailyMenu", 
+                    sessionDate: state.session.date, // 借用欄位傳遞日期
+                    sessionLocation: "工廠端",
+                    data: {
+                        availableItems: itemsArray
+                    }
+                };
+                
+                // 特別處理：因為工廠端我們只傳目標日期
+                payload.sessionDate = state.targetDate;
+
+                await fetch(GOOGLE_SCRIPT_URL, { 
+                    method: 'POST', 
+                    mode: 'no-cors', 
+                    body: JSON.stringify(payload) 
+                });
+                
+                alert(`✅ 成功！\n${state.targetDate} 的供貨菜單已更新至雲端！`);
+            } catch (e) { 
+                console.error(e);
+                alert("上傳失敗，請檢查網路連線。");
+            }
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        // 初始化
+        initDate();
+        renderMenu();
+    </script>
+</body>
+</html>
