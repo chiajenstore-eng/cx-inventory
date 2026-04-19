@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>埕心 Select | 現場專用版</title>
+    <title>埕心 Select | 員工現場版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -18,7 +18,7 @@
     </style>
 </head>
 <body class="pb-36">
-    <div id="loading" class="loading-overlay"><div class="animate-spin text-4xl"><i class="fas fa-sync-alt"></i></div><span>資料上傳中...</span></div>
+    <div id="loading" class="loading-overlay"><div class="animate-spin text-4xl"><i class="fas fa-sync-alt"></i></div><span>上傳雲端試算表中...</span></div>
 
     <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 px-6 py-5 flex justify-between items-center shadow-sm">
         <div>
@@ -26,9 +26,12 @@
                 <h1 class="text-2xl font-black text-slate-800 italic uppercase tracking-tighter">【 員工版 】</h1>
                 <span id="session-tag" class="text-[9px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold hidden">營運中</span>
             </div>
+            <p id="current-mode-title" class="text-[10px] text-slate-400 font-bold mt-1 tracking-widest uppercase">現場作業系統</p>
         </div>
         <div class="text-right">
-            <button id="mini-reset-btn" onclick="confirmReset()" class="hidden text-[10px] bg-slate-100 text-slate-400 px-2 py-1 rounded-lg font-bold border border-slate-200">清空本頁</button>
+            <button id="mini-reset-btn" onclick="confirmReset()" class="hidden text-[10px] bg-slate-100 text-slate-400 px-2 py-1 rounded-lg font-bold border border-slate-200">
+                <i class="fas fa-eraser mr-1"></i>清空本頁
+            </button>
         </div>
     </header>
 
@@ -39,32 +42,132 @@
     </div>
 
     <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex h-20 items-center justify-around shadow-2xl z-50 text-slate-300">
-        <div onclick="switchMode('inventory')" id="nav-inventory" class="flex flex-col items-center font-bold transition-all w-1/2 border-r border-gray-50"><i class="fas fa-calculator text-xl mb-1"></i><span class="text-[11px]">收攤點貨</span></div>
-        <div onclick="switchMode('revenue')" id="nav-revenue" class="flex flex-col items-center font-bold transition-all w-1/2"><i class="fas fa-hand-holding-usd text-xl mb-1"></i><span class="text-[11px]">當日營收</span></div>
+        <div onclick="switchMode('inventory')" id="nav-inventory" class="flex flex-col items-center font-bold transition-all w-1/2 border-r border-gray-50">
+            <i class="fas fa-calculator text-xl mb-1"></i><span class="text-[11px]">收攤點貨</span>
+        </div>
+        <div onclick="switchMode('revenue')" id="nav-revenue" class="flex flex-col items-center font-bold transition-all w-1/2">
+            <i class="fas fa-hand-holding-usd text-xl mb-1"></i><span class="text-[11px]">當日營收</span>
+        </div>
     </nav>
 
-    <div id="session-modal" class="fixed inset-0 z-[250] bg-black/80 flex items-center justify-center p-6"><div class="bg-white w-full max-w-sm rounded-[40px] p-8 shadow-2xl relative text-center"><h2 class="text-xl font-black text-slate-800 mb-6 italic">今日開班對位</h2><div class="space-y-4"><div class="grid grid-cols-2 gap-2"><select id="s-date-m"></select><select id="s-date-d"></select></div><select id="s-loc" class="font-bold text-slate-700 text-center"><option value="嘉北街">📍 嘉北街</option><option value="吉品紅豆餅">📍 吉品紅豆餅</option><option value="溪口北極殿">📍 溪口北極殿</option><option value="中正大學">📍 中正大學</option><option value="其他">📍 其他</option></select><button onclick="confirmSession()" class="w-full bg-[#bfa07a] text-white py-4 rounded-2xl font-bold text-lg mt-4 shadow-lg">確認開班</button></div></div></div>
+    <div id="session-modal" class="fixed inset-0 z-[250] bg-black/80 flex items-center justify-center p-6">
+        <div class="bg-white w-full max-w-sm rounded-[40px] p-8 shadow-2xl relative text-center">
+            <h2 class="text-xl font-black text-slate-800 mb-6 italic">今日開班對位</h2>
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-2">
+                    <select id="s-date-m"></select>
+                    <select id="s-date-d"></select>
+                </div>
+                <select id="s-loc" class="font-bold text-slate-700 text-center">
+                    <option value="嘉北街">📍 嘉北街</option>
+                    <option value="吉品紅豆餅">📍 吉品紅豆餅</option>
+                    <option value="溪口北極殿">📍 溪口北極殿</option>
+                    <option value="中正大學">📍 中正大學</option>
+                    <option value="其他">📍 其他</option>
+                </select>
+                <button onclick="confirmSession()" class="w-full bg-[#bfa07a] text-white py-4 rounded-2xl font-bold text-lg mt-4 shadow-lg">確認開班</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="export-modal" class="hidden fixed inset-0 z-[300] bg-black/80 flex items-center justify-center p-6">
+        <div class="bg-white w-full max-w-sm rounded-[30px] p-6 shadow-2xl relative flex flex-col">
+            <button onclick="document.getElementById('export-modal').classList.add('hidden')" class="absolute top-4 right-6 text-slate-300 text-3xl font-bold">&times;</button>
+            <h2 class="text-lg font-black text-slate-800 mb-4 text-center italic">📤 傳送報表</h2>
+            <textarea id="export-text" class="w-full h-64 bg-gray-50 p-4 rounded-2xl text-[11px] font-bold text-slate-600 outline-none border border-gray-100 mb-4" readonly></textarea>
+            <a id="line-share-btn" href="#" target="_blank" class="w-full bg-[#06C755] text-white py-4 rounded-2xl font-black text-lg flex items-center justify-center gap-2 shadow-lg"><i class="fab fa-line text-2xl"></i> 傳送至 LINE</a>
+        </div>
+    </div>
 
     <script>
+        // 🚀 凱埕，這是你最新的專屬 API 網址
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyC2W-Zd4MLht6wz2d9Vg69Rk3azfha_LdX6RgfXYA_u7k6kYlus638HgNdkn6FkJMF8w/exec';
 
         const products=[{cat:"🥖 麵包區",name:"黃金牛角",price:35},{cat:"🥖 麵包區",name:"原味小菠蘿",price:35},{cat:"🥖 麵包區",name:"奶酥菠蘿",price:35},{cat:"🥖 麵包區",name:"芋頭菠蘿",price:35},{cat:"🥖 麵包區",name:"菠蘿金牛角",price:35},{cat:"🥖 麵包區",name:"楓糖小可頌",price:35},{cat:"🥖 麵包區",name:"鹽花可頌",price:35},{cat:"🥖 麵包區",name:"蘋果派",price:35},{cat:"🥖 麵包區",name:"巧克力大理石",price:35},{cat:"🥖 麵包區",name:"可可麵包捲",price:35},{cat:"🥖 麵包區",name:"奶香小餐包",price:35},{cat:"🥖 麵包區",name:"黃金小羅宋",price:35},{cat:"🥖 麵包區",name:"北海道鮮奶",price:35},{cat:"🥖 麵包區",name:"奶酥小炸彈",price:35},{cat:"🥖 麵包區",name:"牛奶克林姆",price:35},{cat:"🥖 麵包區",name:"咖啡麵包",price:35},{cat:"🥖 麵包區",name:"紅豆麵包",price:35},{cat:"🥖 麵包區",name:"肉鬆麵包",price:35},{cat:"🥖 麵包區",name:"台式肉鬆蔥捲",price:35},{cat:"🥖 麵包區",name:"明太子法國麵包",price:45},{cat:"🥖 麵包區",name:"香蒜法國麵包",price:35},{cat:"🥖 麵包區",name:"香蒜金磚吐司",price:35},{cat:"🥖 麵包區",name:"德腸夏威夷",price:35},{cat:"🥖 麵包區",name:"可可爆漿菠蘿",price:45},{cat:"🥖 麵包區",name:"巧克力QQ球",price:35},{cat:"🥖 麵包區",name:"蔓越莓雜糧",price:45},{cat:"🥖 麵包區",name:"優格蔓越莓",price:55},{cat:"🥖 麵包區",name:"肉桂核桃捲",price:55},{cat:"🥖 麵包區",name:"千層牛奶棒",price:45},{cat:"🥖 麵包區",name:"蜂蜜起酥蛋糕",price:35},{cat:"🥖 麵包區",name:"QQ布丁麵包",price:55},{cat:"🥯 貝果、吐司區",name:"原味軟貝果",price:35},{cat:"🥯 貝果、吐司區",name:"火龍果乳酪貝果",price:45},{cat:"🥯 貝果、吐司區",name:"巧克力貝果",price:45},{cat:"🥯 貝果、吐司區",name:"藍莓抹醬貝果",price:45},{cat:"🥯 貝果、吐司區",name:"三色厚片吐司",price:35},{cat:"🥯 貝果、吐司區",name:"千層小吐司",price:55},{cat:"🍰 蛋糕點心區",name:"花瓣檸檬塔",price:35},{cat:"🍰 蛋糕點心區",name:"台式小蛋塔",price:35},{cat:"🍰 蛋糕點心區",name:"蛋糕捲 (巧克力)",price:50},{cat:"🍰 蛋糕點心區",name:"蛋糕捲 (草莓)",price:50},{cat:"🍰 蛋糕點心區",name:"蛋糕捲 (芋頭)",price:50},{cat:"🍰 蛋糕點心區",name:"蛋糕捲 (香草)",price:50},{cat:"🍰 蛋糕點心區",name:"檸檬小蛋糕",price:35},{cat:"🍰 蛋糕點心區",name:"草莓小蛋糕",price:35},{cat:"🍰 蛋糕點心區",name:"檸檬布丁塔",price:35},{cat:"🍰 蛋糕點心區",name:"冰心泡芙 (巧克力)",price:35},{cat:"🍰 蛋糕點心區",name:"冰心泡芙 (草莓)",price:35},{cat:"🍰 蛋糕點心區",name:"冰心泡芙 (卡士達)",price:35},{cat:"🍰 蛋糕點心區",name:"生乳餐包",price:35},{cat:"🍰 蛋糕點心區",name:"卡士達冰心可頌",price:35},{cat:"🍰 蛋糕點心區",name:"紅豆麻糬",price:35},{cat:"🍰 蛋糕點心區",name:"台式馬卡龍 (原味)",price:50},{cat:"🍰 蛋糕點心區",name:"台式馬卡龍 (巧克力)",price:50},{cat:"🍰 蛋糕點心區",name:"台式馬卡龍 (草莓)",price:50},{cat:"🍰 蛋糕點心區",name:"珍珠糖泡芙餅乾",price:50},{cat:"🍰 蛋糕點心區",name:"法式奶油球 (巧克力)",price:120},{cat:"🍰 蛋糕點心區",name:"法式奶油球 (草莓)",price:120},{cat:"🍰 蛋糕點心區",name:"法式奶油球 (原味)",price:120},{cat:"🍰 蛋糕點心區",name:"肉鬆芋頭小貝",price:120},{cat:"🍰 蛋糕點心區",name:"帕瑪森起士棒",price:120}];
 
-        let state = { session: { active: false, date: '', location: '' }, inventory: {}, revenue: { cash: 0, lp: 0, costRaw: 0, fuel: 0, rent: 0, truckRent: 0 } };
+        let state = { mode: 'inventory', session: { active: false, date: '', location: '' }, inventory: {}, revenue: { cash: 0, lp: 0, costRaw: 0 } };
 
-        function confirmReset() { if(confirm("清空本頁數據？")) { if(state.mode==='inventory') state.inventory={}; else state.revenue={cash:0,lp:0,costRaw:0,fuel:0,rent:0,truckRent:0}; render(); } }
-        function switchMode(m) { state.mode = m; ['inventory', 'revenue'].forEach(t => { document.getElementById('nav-'+t).classList.toggle('active-tab', t===m); }); const bar = document.getElementById('action-bar'), btn = document.getElementById('action-bar-btn'); bar.classList.remove('hidden'); document.getElementById('mini-reset-btn').classList.remove('hidden'); if (m === 'inventory') { btn.innerText = '確認點貨並上傳'; btn.onclick = exportInventory; } else { btn.innerText = '確認營收並上傳'; btn.onclick = exportRevenue; } render(); }
-        function render() { const app = document.getElementById('app'); app.innerHTML = ''; if (state.mode === 'inventory') renderInv(app); else renderRev(app); }
-        function renderInv(container) { let cat = ''; products.forEach((p, i) => { if (p.cat !== cat) { cat = p.cat; container.innerHTML += `<h3 class="text-xs font-bold text-slate-400 mt-6 mb-2">【 ${cat} 】</h3>`; } container.innerHTML += `<div class="product-card p-4 flex items-center justify-between mb-3 shadow-sm"><div><div class="font-bold text-slate-700">${p.name}</div></div><div class="flex items-center"><button onclick="changeQty(${i}, -1)" class="stepper-btn">-</button><div class="w-10 text-center font-bold">${state.inventory[i] || 0}</div><button onclick="changeQty(${i}, 1)" class="stepper-btn">+</button></div></div>`; }); }
-        function renderRev(container) { container.innerHTML = `<div class="space-y-6"><div class="bg-white p-6 rounded-3xl shadow-sm"><div class="grid grid-cols-2 gap-4"><input type="number" id="rev-cash" oninput="saveRev()" placeholder="現金" value="${state.revenue.cash||''}" class="bg-gray-50 p-4 rounded-2xl text-center outline-none"><input type="number" id="rev-lp" oninput="saveRev()" placeholder="LinePay" value="${state.revenue.lp||''}" class="bg-gray-50 p-4 rounded-2xl text-center outline-none"></div></div><div class="bg-amber-50 p-6 rounded-3xl"><input type="number" id="rev-cost-raw" oninput="saveRev()" placeholder="貨單總原價" value="${state.revenue.costRaw||''}" class="w-full bg-white p-4 rounded-2xl text-center outline-none"></div></div>`; }
-        function changeQty(i, d) { state.inventory[i] = Math.max(0, (state.inventory[i] || 0) + d); render(); }
-        function saveRev() { state.revenue = { cash: Number(document.getElementById('rev-cash').value), lp: Number(document.getElementById('rev-lp').value), costRaw: Number(document.getElementById('rev-cost-raw').value) }; }
-        async function syncToCloud(sheet, data) { document.getElementById('loading').style.display = 'flex'; try { await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ targetSheet: sheet, sessionDate: state.session.date, sessionLocation: state.session.location, data: data }) }); alert("✅ 上傳成功！"); } catch (e) { alert("❌ 上傳失敗"); } document.getElementById('loading').style.display = 'none'; }
-        async function exportInventory() { let cloud = {}; products.forEach((p, i) => { if(state.inventory[i] > 0) cloud[p.name] = state.inventory[i]; }); await syncToCloud('Inventory', cloud); }
-        async function exportRevenue() { const disc = state.revenue.costRaw >= 12000 ? 0.5 : 0.55; const net = (state.revenue.cash + state.revenue.lp) - (state.revenue.costRaw * disc); await syncToCloud('Revenue', { "現金": state.revenue.cash, "LinePay": state.revenue.lp, "成本": state.revenue.costRaw * disc, "純利": net }); }
-        function openSessionModal() { const now = new Date(); document.getElementById('s-date-m').innerHTML = Array.from({length:12},(_,i)=>i+1).map(m=>`<option value="${m}" ${now.getMonth()+1===m?'selected':''}>${m}月</option>`).join(''); document.getElementById('s-date-d').innerHTML = Array.from({length:31},(_,i)=>i+1).map(d=>`<option value="${d}" ${now.getDate()===d?'selected':''}>${d}日</option>`).join(''); }
-        function confirmSession() { state.session.active = true; state.session.date = `${document.getElementById('s-date-m').value}/${document.getElementById('s-date-d').value}`; state.session.location = document.getElementById('s-loc').value; document.getElementById('session-modal').classList.add('hidden'); document.getElementById('session-tag').classList.remove('hidden'); switchMode('inventory'); }
-        openSessionModal();
+        function loadData() { const saved = localStorage.getItem('cx_staff_local'); if(saved) state = { ...state, ...JSON.parse(saved) }; }
+        function persist() { localStorage.setItem('cx_staff_local', JSON.stringify(state)); }
+
+        function confirmReset() {
+            if(!confirm("確定要清空這頁的數字嗎？")) return;
+            if(state.mode === 'inventory') state.inventory = {};
+            else state.revenue = { cash:0, lp:0, costRaw:0 };
+            render(); persist();
+        }
+
+        function switchMode(m) {
+            if (!state.session.active) return;
+            state.mode = m;
+            ['inventory', 'revenue'].forEach(t => { if(document.getElementById('nav-'+t)) document.getElementById('nav-'+t).classList.toggle('active-tab', t===m); });
+            document.getElementById('current-mode-title').innerText = m === 'inventory' ? '收攤點貨' : '營收報帳';
+            const bar = document.getElementById('action-bar'), btn = document.getElementById('action-bar-btn');
+            bar.classList.remove('hidden');
+            document.getElementById('mini-reset-btn').classList.remove('hidden');
+            if (m === 'inventory') { btn.innerText = '確認點貨並傳送'; btn.onclick = exportInventory; }
+            else { btn.innerText = '確認營收並傳送'; btn.onclick = exportRevenue; }
+            render(); persist();
+        }
+
+        function render() {
+            const app = document.getElementById('app'); app.innerHTML = '';
+            if (state.mode === 'inventory') {
+                let cat = '';
+                products.forEach((p, i) => {
+                    if (p.cat !== cat) { cat = p.cat; app.innerHTML += `<h3 class="text-xs font-bold text-slate-400 mt-6 mb-2 border-l-4 border-amber-200 pl-2">【 ${cat} 】</h3>`; }
+                    app.innerHTML += `<div class="product-card p-4 flex items-center justify-between mb-3 shadow-sm"><div><div class="font-bold text-slate-700 underline decoration-slate-100">${p.name}</div></div><div class="flex items-center bg-gray-50 rounded-xl p-1"><button onclick="changeQty(${i}, -1)" class="stepper-btn"><i class="fas fa-minus text-xs"></i></button><div class="w-10 text-center font-black">${state.inventory[i] || 0}</div><button onclick="changeQty(${i}, 1)" class="stepper-btn"><i class="fas fa-plus text-xs"></i></button></div></div>`;
+                });
+            } else {
+                app.innerHTML = `<div class="space-y-6"><div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm"><div class="grid grid-cols-2 gap-4"><input type="number" id="rev-cash" oninput="saveRev()" placeholder="現金" value="${state.revenue.cash||''}" class="bg-gray-50 p-4 rounded-2xl text-center outline-none font-bold"><input type="number" id="rev-lp" oninput="saveRev()" placeholder="LinePay" value="${state.revenue.lp||''}" class="bg-gray-50 p-4 rounded-2xl text-center outline-none font-bold"></div></div><div class="bg-amber-50 p-6 rounded-3xl border border-amber-100"><h3 class="text-xs font-black text-amber-600 mb-2 uppercase">貨單總原價</h3><input type="number" id="rev-cost-raw" oninput="saveRev()" placeholder="輸入總原價" value="${state.revenue.costRaw||''}" class="w-full bg-white p-4 rounded-2xl font-black text-amber-700 text-center outline-none border border-amber-100 shadow-inner"></div></div>`;
+            }
+        }
+
+        function changeQty(i, d) { state.inventory[i] = Math.max(0, (state.inventory[i] || 0) + d); render(); persist(); }
+        function saveRev() { state.revenue = { cash: Number(document.getElementById('rev-cash').value), lp: Number(document.getElementById('rev-lp').value), costRaw: Number(document.getElementById('rev-cost-raw').value) }; persist(); }
+
+        async function syncToCloud(sheet, data) {
+            document.getElementById('loading').style.display = 'flex';
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ targetSheet: sheet, sessionDate: state.session.date, sessionLocation: state.session.location, data: data }) });
+                alert("✅ 雲端上傳成功！");
+            } catch (e) { alert("❌ 上傳失敗，請檢查網路"); }
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        async function exportInventory() {
+            let t = 0; let cloud = {}; 
+            products.forEach((p, i) => { if(state.inventory[i]>0) { t += state.inventory[i] * p.price; cloud[p.name] = state.inventory[i]; } });
+            await syncToCloud('Inventory', cloud);
+            showExportModal(`📦【 庫存報表 】\n日期：${state.session.date}\n庫存金額：${t}元`);
+        }
+
+        async function exportRevenue() {
+            const disc = state.revenue.costRaw >= 12000 ? 0.5 : 0.55;
+            const net = (state.revenue.cash + state.revenue.lp) - (state.revenue.costRaw * disc);
+            const cloudData = { "現金": state.revenue.cash, "LinePay": state.revenue.lp, "成本": state.revenue.costRaw * disc, "純利": Math.round(net) };
+            await syncToCloud('Revenue', cloudData);
+            showExportModal(`💰【 營收報表 】\n日期：${state.session.date}\n總收：${state.revenue.cash + state.revenue.lp}\n純利：${Math.round(net)}元`);
+        }
+
+        function showExportModal(txt) { document.getElementById('export-text').value = txt; document.getElementById('line-share-btn').href = `https://line.me/R/msg/text/?${encodeURIComponent(txt)}`; document.getElementById('export-modal').classList.remove('hidden'); }
+        
+        function openSessionModal() {
+            const now = new Date();
+            document.getElementById('s-date-m').innerHTML = Array.from({length:12},(_,i)=>i+1).map(m=>`<option value="${m}" ${now.getMonth()+1===m?'selected':''}>${m}月</option>`).join('');
+            document.getElementById('s-date-d').innerHTML = Array.from({length:31},(_,i)=>i+1).map(d=>`<option value="${d}" ${now.getDate()===d?'selected':''}>${d}日</option>`).join('');
+        }
+
+        function confirmSession() {
+            state.session.active = true;
+            state.session.date = `${document.getElementById('s-date-m').value}/${document.getElementById('s-date-d').value}`;
+            state.session.location = document.getElementById('s-loc').value;
+            document.getElementById('session-modal').style.display = 'none';
+            document.getElementById('session-tag').classList.remove('hidden');
+            switchMode('inventory');
+        }
+
+        loadData(); openSessionModal();
     </script>
 </body>
 </html>
