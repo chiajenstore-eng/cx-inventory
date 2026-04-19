@@ -21,7 +21,7 @@
     </style>
 </head>
 <body class="pb-36">
-    <div id="loading" class="loading-overlay"><div class="animate-spin text-4xl"><i class="fas fa-sync-alt"></i></div><span id="loading-msg">雲端同步中...</span></div>
+    <div id="loading" class="loading-overlay"><div class="animate-spin text-4xl"><i class="fas fa-sync-alt"></i></div><span>雲端同步中...</span></div>
 
     <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 px-6 py-5 flex justify-between items-center shadow-sm">
         <div>
@@ -35,7 +35,7 @@
             <span id="stat-value" class="text-xl font-black text-red-500">$0</span>
             <div class="flex gap-2 mt-1">
                 <button onclick="syncAllCloudData()" class="text-[10px] bg-amber-500 text-white px-2 py-1 rounded-lg font-bold shadow-sm active:bg-amber-600 transition-all"><i class="fas fa-sync-alt mr-1"></i>同步雲端</button>
-                <button id="mini-reset-btn" onclick="confirmReset()" class="hidden text-[10px] bg-slate-100 text-slate-400 px-2 py-1 rounded-lg font-bold border border-slate-200 active:bg-slate-200"><i class="fas fa-eraser mr-1"></i>清空本頁</button>
+                <button id="mini-reset-btn" onclick="confirmReset()" class="hidden text-[10px] bg-slate-100 text-slate-400 px-2 py-1 rounded-lg font-bold border border-slate-200"><i class="fas fa-eraser mr-1"></i>清空本頁</button>
             </div>
         </div>
     </header>
@@ -56,70 +56,48 @@
 
     <div id="export-modal" class="hidden fixed inset-0 z-[300] bg-black/80 backdrop-blur-md flex items-center justify-center p-6"><div class="bg-white w-full max-w-sm rounded-[30px] p-6 shadow-2xl relative flex flex-col"><button onclick="document.getElementById('export-modal').classList.add('hidden')" class="absolute top-4 right-6 text-slate-300 text-3xl font-bold">&times;</button><h2 class="text-lg font-black text-slate-800 mb-4 text-center italic">📤 系統彙整報表</h2><textarea id="export-text" class="w-full h-64 bg-gray-50 p-4 rounded-2xl text-[11px] font-bold text-slate-600 outline-none border border-gray-100 mb-4 leading-relaxed" readonly></textarea><a id="line-share-btn" href="#" target="_blank" class="w-full bg-[#06C755] text-white py-4 rounded-2xl font-black text-lg flex items-center justify-center gap-2 shadow-lg"><i class="fab fa-line text-2xl"></i> 傳送至 LINE</a></div></div>
     <div id="session-modal" class="hidden fixed inset-0 z-[250] bg-black/80 flex items-center justify-center p-6"><div class="bg-white w-full max-w-sm rounded-[40px] p-8 shadow-2xl relative text-center"><button onclick="closeSessionModal()" class="absolute top-6 right-8 text-slate-300 text-2xl font-bold">&times;</button><h2 class="text-xl font-black text-slate-800 mb-6 italic">今日結算對位</h2><div class="space-y-4"><div class="grid grid-cols-2 gap-2"><select id="s-date-m"></select><select id="s-date-d"></select></div><select id="s-loc" class="font-bold text-slate-700 text-center"><option value="嘉北街">📍 嘉北街</option><option value="吉品紅豆餅">📍 吉品紅豆餅</option><option value="溪口北極殿">📍 溪口北極殿</option><option value="中正大學">📍 中正大學</option><option value="其他">📍 其他</option></select><button onclick="confirmSession()" class="w-full bg-[#bfa07a] text-white py-4 rounded-2xl font-bold text-lg mt-4 shadow-lg">進入系統</button></div></div></div>
+    <div id="order-modal" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end"><div class="bg-white w-full rounded-t-[40px] p-6 max-h-[95vh] overflow-hidden flex flex-col shadow-2xl"><div class="flex justify-between items-center mb-4"><h2 id="order-modal-title" class="text-xl font-black text-slate-800 italic">📝 預定單</h2><button onclick="closeOrderModal()" class="text-slate-400 text-3xl">&times;</button></div><div class="overflow-y-auto space-y-4 pb-12"><div id="order-item-picker" class="space-y-4"></div><textarea id="o-note" placeholder="備註..." class="w-full bg-gray-50 p-4 rounded-2xl font-bold h-20 outline-none"></textarea><button onclick="saveNewOrder()" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-bold text-lg shadow-xl">確認儲存</button></div></div></div>
 
     <script>
+        // 👇👇👇 凱埕，請確認這裡貼上的是最新的網址 👇👇👇
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyC2W-Zd4MLht6wz2d9Vg69Rk3azfha_LdX6RgfXYA_u7k6kYlus638HgNdkn6FkJMF8w/exec';
 
         const products=[{cat:"🥖 麵包區",name:"黃金牛角",price:35},{cat:"🥖 麵包區",name:"原味小菠蘿",price:35},{cat:"🥖 麵包區",name:"奶酥菠蘿",price:35},{cat:"🥖 麵包區",name:"芋頭菠蘿",price:35},{cat:"🥖 麵包區",name:"菠蘿金牛角",price:35},{cat:"🥖 麵包區",name:"楓糖小可頌",price:35},{cat:"🥖 麵包區",name:"鹽花可頌",price:35},{cat:"🥖 麵包區",name:"蘋果派",price:35},{cat:"🥖 麵包區",name:"巧克力大理石",price:35},{cat:"🥖 麵包區",name:"可可麵包捲",price:35},{cat:"🥖 麵包區",name:"奶香小餐包",price:35},{cat:"🥖 麵包區",name:"黃金小羅宋",price:35},{cat:"🥖 麵包區",name:"北海道鮮奶",price:35},{cat:"🥖 麵包區",name:"奶酥小炸彈",price:35},{cat:"🥖 麵包區",name:"牛奶克林姆",price:35},{cat:"🥖 麵包區",name:"咖啡麵包",price:35},{cat:"🥖 麵包區",name:"紅豆麵包",price:35},{cat:"🥖 麵包區",name:"肉鬆麵包",price:35},{cat:"🥖 麵包區",name:"台式肉鬆蔥捲",price:35},{cat:"🥖 麵包區",name:"明太子法國麵包",price:45},{cat:"🥖 麵包區",name:"香蒜法國麵包",price:35},{cat:"🥖 麵包區",name:"香蒜金磚吐司",price:35},{cat:"🥖 麵包區",name:"德腸夏威夷",price:35},{cat:"🥖 麵包區",name:"可可爆漿菠蘿",price:45},{cat:"🥖 麵包區",name:"巧克力QQ球",price:35},{cat:"🥖 麵包區",name:"蔓越莓雜糧",price:45},{cat:"🥖 麵包區",name:"優格蔓越莓",price:55},{cat:"🥖 麵包區",name:"肉桂核桃捲",price:55},{cat:"🥖 麵包區",name:"千層牛奶棒",price:45},{cat:"🥖 麵包區",name:"蜂蜜起酥蛋糕",price:35},{cat:"🥖 麵包區",name:"QQ布丁麵包",price:55},{cat:"🥯 貝果、吐司區",name:"原味軟貝果",price:35},{cat:"🥯 貝果、吐司區",name:"火龍果乳酪貝果",price:45},{cat:"🥯 貝果、吐司區",name:"巧克力貝果",price:45},{cat:"🥯 貝果、吐司區",name:"藍莓抹醬貝果",price:45},{cat:"🥯 貝果、吐司區",name:"三色厚片吐司",price:35},{cat:"🥯 貝果、吐司區",name:"千層小吐司",price:55},{cat:"🍰 蛋糕點心區",name:"花瓣檸檬塔",price:35},{cat:"🍰 蛋糕點心區",name:"台式小蛋塔",price:35},{cat:"🍰 蛋糕點心區",name:"蛋糕捲 (巧克力)",price:50},{cat:"🍰 蛋糕點心區",name:"蛋糕捲 (草莓)",price:50},{cat:"🍰 蛋糕點心區",name:"蛋糕捲 (芋頭)",price:50},{cat:"🍰 蛋糕點心區",name:"蛋糕捲 (香草)",price:50},{cat:"🍰 蛋糕點心區",name:"檸檬小蛋糕",price:35},{cat:"🍰 蛋糕點心區",name:"草莓小蛋糕",price:35},{cat:"🍰 蛋糕點心區",name:"檸檬布丁塔",price:35},{cat:"🍰 蛋糕點心區",name:"冰心泡芙 (巧克力)",price:35},{cat:"🍰 蛋糕點心區",name:"冰心泡芙 (草莓)",price:35},{cat:"🍰 蛋糕點心區",name:"冰心泡芙 (卡士達)",price:35},{cat:"🍰 蛋糕點心區",name:"生乳餐包",price:35},{cat:"🍰 蛋糕點心區",name:"卡士達冰心可頌",price:35},{cat:"🍰 蛋糕點心區",name:"紅豆麻糬",price:35},{cat:"🍰 蛋糕點心區",name:"台式馬卡龍 (原味)",price:50},{cat:"🍰 蛋糕點心區",name:"台式馬卡龍 (巧克力)",price:50},{cat:"🍰 蛋糕點心區",name:"台式馬卡龍 (草莓)",price:50},{cat:"🍰 蛋糕點心區",name:"珍珠糖泡芙餅乾",price:50},{cat:"🍰 蛋糕點心區",name:"法式奶油球 (巧克力)",price:120},{cat:"🍰 蛋糕點心區",name:"法式奶油球 (草莓)",price:120},{cat:"🍰 蛋糕點心區",name:"法式奶油球 (原味)",price:120},{cat:"🍰 蛋糕點心區",name:"肉鬆芋頭小貝",price:120},{cat:"🍰 蛋糕點心區",name:"帕瑪森起士棒",price:120}];
 
-        let state = {
-            mode: 'orders', session: { active: false, date: '', location: '', dayOfWeek: 0 },
-            targetOrderDate: '', inventory: {}, factory: {}, orders: [], orderDraft: {}, editOrderIndex: null,
-            baseOrders: { 0:{}, 1:{}, 2:{}, 3:{}, 4:{}, 5:{}, 6:{} },
-            revenue: { cash: 0, lp: 0, costRaw: 0, fuel: 0, rent: 0, elec: 0, truckRent: 0, etc: 0, other: 0, note: '' },
-            availableMenu: null, cloudReport: null
-        };
+        let state = { mode: 'orders', session: { active: false, date: '', location: '' }, inventory: {}, factory: {}, orders: [], orderDraft: {}, baseOrders: { 0:{}, 1:{}, 2:{}, 3:{}, 4:{}, 5:{}, 6:{} }, revenue: { cash: 0, lp: 0, costRaw: 0, fuel: 0, rent: 0, truckRent: 0 }, availableMenu: null, cloudReport: null };
 
-        function loadData() { const saved = localStorage.getItem('cx_inventory_data'); if(saved) { state = { ...state, ...JSON.parse(saved) }; state.orderDraft = {}; state.editOrderIndex = null; } }
+        function loadData() { const saved = localStorage.getItem('cx_inventory_data'); if(saved) { state = { ...state, ...JSON.parse(saved) }; } }
         function persist() { localStorage.setItem('cx_inventory_data', JSON.stringify(state)); }
 
         async function syncAllCloudData() {
             if(!state.session.active) { alert("請先選取日期進入系統！"); return; }
             document.getElementById('loading').style.display = 'flex';
-            document.getElementById('loading-msg').innerText = "雲端對位中...";
-            
             try {
-                const dateParam = state.session.date;
-                const finalUrl = `${GOOGLE_SCRIPT_URL}?action=getMenu&date=${encodeURIComponent(dateParam)}`;
-                
-                const response = await fetch(finalUrl);
-                if (!response.ok) throw new Error("HTTP 錯誤");
-                
-                const menuData = await response.json();
+                const date = encodeURIComponent(state.session.date);
+                const menuRes = await fetch(`${GOOGLE_SCRIPT_URL}?action=getMenu&date=${date}`);
+                const menuData = await menuRes.json();
                 state.availableMenu = (menuData.items && menuData.items.length > 0) ? menuData.items : null;
                 
-                const reportUrl = `${GOOGLE_SCRIPT_URL}?action=getReports&date=${encodeURIComponent(dateParam)}`;
-                const reportRes = await fetch(reportUrl);
+                const reportRes = await fetch(`${GOOGLE_SCRIPT_URL}?action=getReports&date=${date}`);
                 state.cloudReport = await reportRes.json();
                 
                 render();
-                alert("✅ 雲端同步完成！\n菜單與報表已根據日期 " + dateParam + " 更新。");
-            } catch (e) { 
-                alert("❌ 同步失敗！原因：" + e.message + "\n請確保試算表名稱正確且已正確部署。"); 
-            }
+                alert("✅ 同步完成！日期：" + state.session.date);
+            } catch (e) { alert("❌ 同步失敗。請至試算表確認是否有當天資料。"); }
             document.getElementById('loading').style.display = 'none';
         }
 
-        function confirmReset() {
-            if(!confirm("確定要清空「當前頁面」的數據嗎？")) return;
-            if(state.mode === 'inventory') state.inventory = {};
-            else if(state.mode === 'revenue') state.revenue = { cash:0, lp:0, costRaw:0, fuel:0, rent:0, elec:0, truckRent:0, etc:0, other:0, note:'' };
-            else if(state.mode === 'factory') state.factory = {};
-            render(); persist();
-        }
-
         function switchMode(m) {
-            if ((m === 'inventory' || m === 'revenue' || m === 'factory') && !state.session.active) { state.tempMode = m; openSessionModal(); return; }
+            if (!state.session.active) { state.tempMode = m; openSessionModal(); return; }
             state.mode = m;
-            ['inventory', 'revenue', 'orders', 'factory', 'analysis'].forEach(t => { if(document.getElementById('nav-'+t)) document.getElementById('nav-'+t).classList.toggle('active-tab', t===m); });
-            document.getElementById('current-mode-title').innerText = {inventory:'收攤點貨結算', revenue:'營收利潤結算', orders:'預定管理', factory:'工廠叫貨規劃', analysis:'營業分析'}[m];
-            const bar = document.getElementById('action-bar'), btn = document.getElementById('action-bar-btn'), resetBtn = document.getElementById('mini-reset-btn');
-            if (m === 'orders' || m === 'analysis') { bar.classList.add('hidden'); resetBtn.classList.add('hidden'); } 
+            document.getElementById('current-mode-title').innerText = {inventory:'收攤點貨', revenue:'營收報帳', orders:'預定管理', factory:'工廠叫貨', analysis:'營業分析'}[m];
+            const bar = document.getElementById('action-bar'), btn = document.getElementById('action-bar-btn');
+            if (m === 'orders' || m === 'analysis') bar.classList.add('hidden');
             else {
-                bar.classList.remove('hidden'); resetBtn.classList.remove('hidden');
-                if (m === 'factory') { btn.innerHTML = '<i class="fas fa-paper-plane"></i> 確認下單並輸出'; btn.onclick = exportFactory; }
-                else if (m === 'inventory') { btn.innerHTML = '<i class="fas fa-box-open"></i> 確認收攤並輸出'; btn.onclick = exportInventory; }
-                else if (m === 'revenue') { btn.innerHTML = '<i class="fas fa-coins"></i> 確認營收並輸出'; btn.onclick = exportRevenue; }
+                bar.classList.remove('hidden');
+                if (m === 'factory') { btn.innerText = '確認下單並輸出'; btn.onclick = exportFactory; }
+                else if (m === 'inventory') { btn.innerText = '確認收攤並輸出'; btn.onclick = exportInventory; }
+                else if (m === 'revenue') { btn.innerText = '確認營收並輸出'; btn.onclick = exportRevenue; }
             }
             render(); persist();
         }
@@ -137,97 +115,59 @@
 
         function renderProducts(container, dataObj, modeType, pList) {
             let cat = ''; pList.forEach((p) => {
-                const prodIdx = products.findIndex(orig => orig.name === p.name);
-                if (p.cat !== cat) { cat = p.cat; container.innerHTML += `<h3 class="text-[11px] font-black text-slate-300 mb-3 mt-8 ml-2 uppercase border-l-4 border-amber-200 pl-2">【 ${cat.replace(/🥖 |🥯 |🍰 /g, '')} 】</h3>`; }
-                container.innerHTML += `<div class="product-card p-4 flex items-center justify-between shadow-sm mb-3"><div class="flex-1"><div class="font-bold text-slate-700 underline decoration-slate-100 underline-offset-4">${p.name}</div></div><div class="flex items-center bg-gray-50 rounded-xl p-1 border border-gray-100"><button onclick="changeQty('${modeType}', ${prodIdx}, -1)" class="stepper-btn"><i class="fas fa-minus text-xs"></i></button><div class="w-12 text-center font-black text-slate-700">${dataObj[prodIdx] || 0}</div><button onclick="changeQty('${modeType}', ${prodIdx}, 1)" class="stepper-btn"><i class="fas fa-plus text-xs"></i></button></div></div>`;
+                const idx = products.findIndex(orig => orig.name === p.name);
+                if (p.cat !== cat) { cat = p.cat; container.innerHTML += `<h3 class="text-xs font-bold text-slate-400 mt-6 mb-2 uppercase tracking-widest">【 ${cat} 】</h3>`; }
+                container.innerHTML += `<div class="product-card p-4 flex items-center justify-between mb-3 shadow-sm"><div><div class="font-bold text-slate-700">${p.name}</div></div><div class="flex items-center"><button onclick="changeQty('${modeType}', ${idx}, -1)" class="stepper-btn">-</button><div class="w-10 text-center font-bold">${dataObj[idx] || 0}</div><button onclick="changeQty('${modeType}', ${idx}, 1)" class="stepper-btn">+</button></div></div>`;
             });
         }
 
         function renderFactory(container, pList) {
-            if(!state.targetOrderDate) {
-               const tom = new Date(); tom.setDate(tom.getDate()+1);
-               state.targetOrderDate = `${tom.getMonth()+1}/${tom.getDate()}`;
-            }
-            const [m, d] = state.targetOrderDate.split('/'); const targetDateObj = new Date(new Date().getFullYear(), m-1, d);
-            const tDay = targetDateObj.getDay(); const isReg = [0, 2, 4].includes(tDay);
-            container.innerHTML = `<div class="bg-slate-800 p-6 rounded-[30px] mb-6 shadow-xl text-white text-center"><p class="text-[10px] font-black text-slate-400 mb-3 tracking-widest uppercase italic">預定到貨日期</p><div class="grid grid-cols-2 gap-2 mb-4"><select id="f-date-m" onchange="updateTargetDate()"></select><select id="f-date-d" onchange="updateTargetDate()"></select></div><p class="text-[12px] font-black ${isReg?'text-amber-300':'text-slate-400'}">${state.targetOrderDate} (週${['日','一','二','三','四','五','六'][tDay]}) ${isReg?'【大補貨】':'【補貨】'}</p></div><div id="factory-list"></div>`;
-            document.getElementById('f-date-m').innerHTML = Array.from({length:12},(_,i)=>i+1).map(v=>`<option value="${v}" ${v==m?'selected':''}>${v}月</option>`).join('');
-            document.getElementById('f-date-d').innerHTML = Array.from({length:31},(_,i)=>i+1).map(v=>`<option value="${v}" ${v==d?'selected':''}>${v}日</option>`).join('');
             let cat = ''; pList.forEach((p) => {
-                const prodIdx = products.findIndex(orig => orig.name === p.name);
-                const base = state.baseOrders[tDay][prodIdx] || 0; 
-                let oSum = 0; state.orders.forEach(o => { if(o.date === state.targetOrderDate) o.items.forEach(it => { if(it.name === p.name) oSum += it.qty; }); });
-                const inv = state.inventory[prodIdx] || 0; const suggest = Math.max(0, (base + oSum) - inv);
-                if (p.cat !== cat) { cat = p.cat; container.querySelector('#factory-list').innerHTML += `<h3 class="text-[11px] font-black text-slate-300 mb-3 mt-8 ml-2 border-l-4 border-amber-200 pl-2 uppercase">【 ${cat.replace(/🥖 |🥯 |🍰 /g, '')} 】</h3>`; }
-                container.querySelector('#factory-list').innerHTML += `<div class="product-card p-4 flex items-center justify-between mb-3"><div class="flex-1"><div class="font-bold text-slate-700">${p.name}</div><p class="text-[9px] text-slate-400 mt-1">基本:${base}+預定:${oSum}-庫存:${inv}</p></div><div class="flex items-center bg-white rounded-xl p-1 border border-gray-100"><button onclick="changeQty('factory',${prodIdx},-1)" class="stepper-btn"><i class="fas fa-minus text-xs"></i></button><div class="w-12 text-center font-black text-slate-700 text-lg">${state.factory[prodIdx] === undefined ? suggest : state.factory[prodIdx]}</div><button onclick="changeQty('factory',${prodIdx},1)" class="stepper-btn"><i class="fas fa-plus text-xs"></i></button></div></div>`;
+                const idx = products.findIndex(orig => orig.name === p.name);
+                if (p.cat !== cat) { cat = p.cat; container.innerHTML += `<h3 class="text-xs font-bold text-slate-400 mt-6 mb-2 uppercase tracking-widest">【 ${cat} 】</h3>`; }
+                container.innerHTML += `<div class="product-card p-4 flex items-center justify-between mb-3 shadow-sm"><div><div class="font-bold text-slate-700">${p.name}</div></div><div class="flex items-center"><button onclick="changeQty('factory', ${idx}, -1)" class="stepper-btn">-</button><div class="w-10 text-center font-bold">${state.factory[idx] || 0}</div><button onclick="changeQty('factory', ${idx}, 1)" class="stepper-btn">+</button></div></div>`;
             });
         }
 
         function renderRevenue(container) {
-            container.innerHTML = `<div class="space-y-6"><div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm"><div class="flex justify-between items-center mb-4"><h3 class="text-xs font-black text-[#bfa07a] uppercase tracking-widest">單日結算</h3><span class="text-[10px] bg-slate-100 px-2 py-1 rounded font-bold italic">${state.session.date}</span></div><div class="grid grid-cols-2 gap-4"><input type="number" inputmode="decimal" id="rev-cash" oninput="saveRev()" placeholder="現金" value="${state.revenue.cash||''}" class="bg-gray-50 p-4 rounded-2xl font-bold text-center outline-none"><input type="number" inputmode="decimal" id="rev-lp" oninput="saveRev()" placeholder="LinePay" value="${state.revenue.lp||''}" class="bg-gray-50 p-4 rounded-2xl font-bold text-center outline-none"></div></div><div class="bg-amber-50/30 p-6 rounded-3xl border border-amber-100"><h3 class="text-xs font-black text-amber-600 uppercase mb-4">貨單總原價</h3><input type="number" inputmode="decimal" id="rev-cost-raw" oninput="saveRev()" placeholder="請填寫總原價" value="${state.revenue.costRaw||''}" class="w-full bg-white p-4 rounded-2xl font-black text-amber-700 text-center outline-none border border-amber-100"></div><div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm"><h3 class="text-xs font-black text-red-400 uppercase mb-4">支出明細</h3><div class="grid grid-cols-2 gap-3"><input type="number" inputmode="decimal" id="exp-fuel" oninput="saveRev()" placeholder="加油" value="${state.revenue.fuel||''}" class="bg-gray-50 p-3 rounded-xl text-sm text-center outline-none"><input type="number" inputmode="decimal" id="exp-rent" oninput="saveRev()" placeholder="租金" value="${state.revenue.rent||''}" class="bg-gray-50 p-3 rounded-xl text-sm text-center outline-none"><input type="number" id="exp-truckRent" oninput="saveRev()" placeholder="餐車租金" value="${state.revenue.truckRent||''}" class="bg-gray-50 p-3 rounded-xl text-sm text-center outline-none col-span-2"></div></div></div>`;
-            updateStat();
+            container.innerHTML = `<div class="space-y-6"><div class="bg-white p-6 rounded-3xl shadow-sm"><div class="grid grid-cols-2 gap-4"><input type="number" id="rev-cash" oninput="saveRev()" placeholder="現金" value="${state.revenue.cash||''}" class="bg-gray-50 p-4 rounded-2xl text-center outline-none"><input type="number" id="rev-lp" oninput="saveRev()" placeholder="LinePay" value="${state.revenue.lp||''}" class="bg-gray-50 p-4 rounded-2xl text-center outline-none"></div></div><div class="bg-amber-50 p-6 rounded-3xl"><input type="number" id="rev-cost-raw" oninput="saveRev()" placeholder="貨單總原價" value="${state.revenue.costRaw||''}" class="w-full bg-white p-4 rounded-2xl text-center outline-none"></div></div>`;
         }
 
         function renderOrders(container) {
-            container.innerHTML = `<button onclick="openOrderModal()" class="w-full bg-[#bfa07a] text-white py-4 rounded-2xl font-bold shadow-lg flex items-center justify-center gap-2 mb-6"><i class="fas fa-plus-circle"></i> 現場加單 (暫存)</button><div class="space-y-4" id="order-list-box"></div>`;
-            const list = document.getElementById('order-list-box');
-            if(state.orders.length===0) { list.innerHTML = '<p class="text-center text-slate-400 py-10 font-bold italic">目前無資料</p>'; return; }
+            container.innerHTML = `<button onclick="openOrderModal()" class="w-full bg-[#bfa07a] text-white py-4 rounded-2xl font-bold mb-6">新增預定 (暫存)</button><div class="space-y-4" id="order-list-box"></div>`;
             state.orders.forEach((o, idx) => {
-                const item = document.createElement('div'); item.className = 'order-swipe-container';
-                item.innerHTML = `<div class="swipe-bg"><i class="fas fa-check-circle mr-2"></i> 已取餐</div><div class="order-item-content p-5 rounded-[30px] border border-gray-100 shadow-sm" id="order-${idx}"><div class="flex justify-between items-start"><div><span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded-md font-black italic">${o.date}</span><h4 class="font-black text-slate-700 mt-2 uppercase text-lg">${o.name}</h4></div><span class="text-amber-600 font-black text-lg">$${o.total}</span></div><div class="border-t border-dashed border-gray-100 pt-2 text-[11px] text-slate-500 font-bold">${o.items.map(i=>`${i.name}x${i.qty}`).join('、')}</div></div>`;
-                list.appendChild(item); initSwipe(item, idx);
+                container.innerHTML += `<div class="p-4 bg-white rounded-3xl border border-gray-100 shadow-sm"><div class="flex justify-between font-bold"><span>${o.name}</span><span>$${o.total}</span></div><div class="text-xs text-slate-400 mt-1">${o.items.map(i=>`${i.name}x${i.qty}`).join(',')}</div></div>`;
             });
         }
 
-        function initSwipe(el, idx) {
-            const content = el.querySelector('.order-item-content'), bg = el.querySelector('.swipe-bg');
-            let startX = 0, currentX = 0;
-            el.addEventListener('touchstart', e => { startX = e.touches[0].clientX; bg.style.opacity = 1; }, {passive: true});
-            el.addEventListener('touchmove', e => { currentX = e.touches[0].clientX - startX; if(currentX > 0) { content.style.transform = `translateX(${currentX}px)`; bg.style.opacity = Math.min(currentX / 150, 1); } }, {passive: true});
-            el.addEventListener('touchend', () => { if(currentX > 150) { content.style.transform = `translateX(100%)`; setTimeout(() => { state.orders.splice(idx,1); render(); persist(); }, 200); } else { content.style.transform = `translateX(0)`; bg.style.opacity = 0; } currentX = 0; });
-        }
-
         function renderAnalysis(container) {
-            if(!state.cloudReport || (!state.cloudReport.inventory && !state.cloudReport.revenue)) {
-                container.innerHTML = `<div class="p-10 text-center"><i class="fas fa-cloud-download-alt text-4xl text-slate-200 mb-4"></i><p class="text-slate-400 font-bold italic mb-4">尚未讀取雲端報表</p><button onclick="syncAllCloudData()" class="bg-amber-500 text-white px-6 py-3 rounded-2xl font-bold shadow-lg">📥 讀取雲端報表</button></div>`;
-                return;
-            }
-            let html = `<div class="space-y-6"><h2 class="text-lg font-black text-slate-800 italic">📅 ${state.session.date} 雲端同步報表</h2>`;
-            if(state.cloudReport.revenue) {
-                const r = state.cloudReport.revenue;
-                html += `<div class="bg-white p-6 rounded-[30px] shadow-sm border border-gray-100"><h3 class="text-xs font-black text-amber-600 uppercase mb-4 tracking-widest">💰 營收</h3><p class="text-lg font-black text-slate-700">總額: $${(Number(r["現金"])||0)+(Number(r["LinePay"])||0)}</p><p class="text-lg font-black text-green-600">純利: $${Math.round(r["純利"])||0}</p></div>`;
-            }
+            if(!state.cloudReport) { container.innerHTML = `<div class="p-10 text-center"><button onclick="syncAllCloudData()" class="bg-amber-500 text-white px-6 py-3 rounded-2xl font-bold">讀取雲端報表</button></div>`; return; }
+            let html = `<div class="space-y-4"><h2 class="font-bold">📅 日期: ${state.session.date}</h2>`;
+            if(state.cloudReport.revenue) html += `<div class="p-4 bg-white rounded-2xl shadow-sm">💰 雲端純利: $${Math.round(state.cloudReport.revenue["純利"])}</div>`;
             if(state.cloudReport.inventory) {
-                html += `<div class="bg-white p-6 rounded-[30px] shadow-sm border border-gray-100"><h3 class="text-xs font-black text-slate-400 uppercase mb-4 tracking-widest">📦 剩餘庫存</h3>`;
-                for(let key in state.cloudReport.inventory) { if(state.cloudReport.inventory[key] > 0) html += `<div class="flex justify-between text-xs font-bold mb-1"><span>${key}</span><span>${state.cloudReport.inventory[key]}個</span></div>`; }
+                html += `<div class="p-4 bg-white rounded-2xl shadow-sm">📦 剩餘庫存:<br>`;
+                for(let k in state.cloudReport.inventory) { if(state.cloudReport.inventory[k]>0) html += `${k}: ${state.cloudReport.inventory[k]}個<br>`; }
                 html += `</div>`;
             }
-            container.innerHTML = html;
+            container.innerHTML = html + `</div>`;
         }
 
-        async function syncToCloud(sheetName, dataObj) { try { await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ targetSheet: sheetName, sessionDate: state.session.date, sessionLocation: state.session.location, data: dataObj }) }); } catch (e) {} }
-        function showExportModal(text) { document.getElementById('export-text').value = text; document.getElementById('line-share-btn').href = `https://line.me/R/msg/text/?${encodeURIComponent(text)}`; document.getElementById('export-modal').classList.remove('hidden'); }
-        async function exportInventory() { let t = 0; products.forEach((p, i) => t += (state.inventory[i] || 0) * p.price); let cloud = {}; products.forEach((p, i) => { if(state.inventory[i] > 0) cloud[p.name] = state.inventory[i]; }); await syncToCloud('Inventory', cloud); showExportModal(`📦 庫存報表\n日期：${state.session.date}\n金額：${t}元`); }
-        async function exportRevenue() { const disc = state.revenue.costRaw >= 12000 ? 0.5 : 0.55; const net = (state.revenue.cash + state.revenue.lp) - (state.revenue.costRaw * disc) - (state.revenue.fuel + state.revenue.rent + state.revenue.truckRent); const cloudData = { "現金": state.revenue.cash, "LinePay": state.revenue.lp, "成本": state.revenue.costRaw * disc, "純利": Math.round(net) }; await syncToCloud('Revenue', cloudData); showExportModal(`💰 營收報表\n日期：${state.session.date}\n純利：${Math.round(net)}元`); }
-        async function exportFactory() { let cloud = {}; products.forEach((p, i) => { if(state.factory[i] > 0) cloud[p.name] = state.factory[i]; }); await syncToCloud('Factory', cloud); showExportModal(`🚚 叫貨單\n日期：${state.targetOrderDate}`); }
-        function updateStat() {
-            const val = document.getElementById('stat-value');
-            if (state.mode === 'inventory') { let t = 0; products.forEach((p, i) => t += (state.inventory[i] || 0) * p.price); val.innerText = '$' + t; }
-            else if (state.mode === 'factory') { let t = 0; products.forEach((p, i) => t += (state.factory[i] || 0) * p.price); val.innerText = '$' + t; }
-            else if (state.mode === 'revenue') { const disc = state.revenue.costRaw >= 12000 ? 0.5 : 0.55; const net = (state.revenue.cash + state.revenue.lp) - (state.revenue.costRaw * disc) - (state.revenue.fuel + state.revenue.rent + state.revenue.truckRent); val.innerText = '$' + Math.round(net); }
-            else if (state.mode === 'orders') { let t = 0; state.orders.forEach(o => t += o.total); val.innerText = '$' + t; }
-        }
-        function openSessionModal() { document.getElementById('session-modal').classList.remove('hidden'); const now = new Date(); document.getElementById('s-date-m').innerHTML = Array.from({length:12},(_,i)=>i+1).map(m=>`<option value="${m}" ${now.getMonth()+1===m?'selected':''}>${m}月</option>`).join(''); document.getElementById('s-date-d').innerHTML = Array.from({length:31},(_,i)=>i+1).map(d=>`<option value="${d}" ${now.getDate()===d?'selected':''}>${d}日</option>`).join(''); }
+        async function syncToCloud(sheet, data) { try { await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ targetSheet: sheet, sessionDate: state.session.date, sessionLocation: state.session.location, data: data }) }); } catch (e) {} }
+        function showExportModal(txt) { document.getElementById('export-text').value = txt; document.getElementById('line-share-btn').href = `https://line.me/R/msg/text/?${encodeURIComponent(txt)}`; document.getElementById('export-modal').classList.remove('hidden'); }
+        async function exportInventory() { let t=0; let cloud={}; products.forEach((p,i)=>{ if(state.inventory[i]>0) { t+=state.inventory[i]*p.price; cloud[p.name]=state.inventory[i]; } }); await syncToCloud('Inventory', cloud); showExportModal(`📦 庫存\n日期:${state.session.date}\n總額:${t}`); }
+        async function exportRevenue() { const disc=state.revenue.costRaw>=12000?0.5:0.55; const net=(state.revenue.cash+state.revenue.lp)-(state.revenue.costRaw*disc); await syncToCloud('Revenue', {"現金":state.revenue.cash,"LinePay":state.revenue.lp,"成本":state.revenue.costRaw*disc,"純利":net}); showExportModal(`💰 報帳\n日期:${state.session.date}\n純利:${Math.round(net)}`); }
+        async function exportFactory() { let cloud={}; products.forEach((p,i)=>{ if(state.factory[i]>0) cloud[p.name]=state.factory[i]; }); await syncToCloud('Factory', cloud); showExportModal(`🚚 叫貨\n日期:${state.session.date}`); }
+        function updateStat() { const val = document.getElementById('stat-value'); if(state.mode==='inventory'){let t=0; products.forEach((p,i)=>t+=(state.inventory[i]||0)*p.price); val.innerText='$'+t;} else if(state.mode==='revenue'){const disc=state.revenue.costRaw>=12000?0.5:0.55; val.innerText='$'+Math.round((state.revenue.cash+state.revenue.lp)-(state.revenue.costRaw*disc));} }
+        function openSessionModal() { document.getElementById('session-modal').classList.remove('hidden'); const now=new Date(); document.getElementById('s-date-m').innerHTML=Array.from({length:12},(_,i)=>i+1).map(m=>`<option value="${m}" ${now.getMonth()+1===m?'selected':''}>${m}月</option>`).join(''); document.getElementById('s-date-d').innerHTML=Array.from({length:31},(_,i)=>i+1).map(d=>`<option value="${d}" ${now.getDate()===d?'selected':''}>${d}日</option>`).join(''); }
         function closeSessionModal() { document.getElementById('session-modal').classList.add('hidden'); switchMode('orders'); }
-        function confirmSession() { const m = document.getElementById('s-date-m').value, d = document.getElementById('s-date-d').value; state.session.active = true; state.session.date = `${m}/${d}`; state.session.location = document.getElementById('s-loc').value; document.getElementById('session-modal').classList.add('hidden'); document.getElementById('session-tag').classList.remove('hidden'); syncAllCloudData(); switchMode(state.tempMode || 'inventory'); }
-        function updateTargetDate() { state.targetOrderDate = `${document.getElementById('f-date-m').value}/${document.getElementById('f-date-d').value}`; state.factory = {}; render(); persist(); }
-        function saveRev() { state.revenue = { cash: Number(document.getElementById('rev-cash').value)||0, lp: Number(document.getElementById('rev-lp').value)||0, costRaw: Number(document.getElementById('rev-cost-raw').value)||0, fuel: Number(document.getElementById('exp-fuel').value)||0, rent: Number(document.getElementById('exp-rent').value)||0, truckRent: Number(document.getElementById('exp-truckRent').value)||0 }; updateStat(); persist(); }
-        function toggleOtherLoc() { }
-        function closeOrderModal() { document.getElementById('order-modal').classList.add('hidden'); }
-        function changeQty(type, i, d) { if(type === 'inventory') state.inventory[i] = Math.max(0, (state.inventory[i] || 0) + d); else if(type === 'factory') state.factory[i] = Math.max(0, (state.factory[i] || 0) + d); else if(type === 'draft') { state.orderDraft[i] = Math.max(0, (state.orderDraft[i] || 0) + d); document.getElementById(`draft-qty-${i}`).innerText = state.orderDraft[i]; } render(); persist(); }
+        function confirmSession() { state.session.active=true; state.session.date=`${document.getElementById('s-date-m').value}/${document.getElementById('s-date-d').value}`; state.session.location=document.getElementById('s-loc').value; document.getElementById('session-modal').classList.add('hidden'); syncAllCloudData(); switchMode(state.tempMode||'inventory'); }
+        function saveRev() { state.revenue={cash:Number(document.getElementById('rev-cash').value),lp:Number(document.getElementById('rev-lp').value),costRaw:Number(document.getElementById('rev-cost-raw').value)}; updateStat(); persist(); }
+        function changeQty(t, i, d) { if(t==='inventory') state.inventory[i]=Math.max(0,(state.inventory[i]||0)+d); else if(t==='factory') state.factory[i]=Math.max(0,(state.factory[i]||0)+d); else if(t==='draft') { state.orderDraft[i]=Math.max(0,(state.orderDraft[i]||0)+d); document.getElementById(`draft-qty-${i}`).innerText=state.orderDraft[i]; } render(); persist(); }
         function openOrderModal() { state.orderDraft={}; document.getElementById('order-modal').classList.remove('hidden'); renderOrderItemPicker(); }
-        function saveNewOrder() { const its=[]; let t=0; products.forEach((p,i)=>{ const q=state.orderDraft[i]||0; if(q>0){ its.push({name:p.name,qty:q}); t+=p.price*q; } }); state.orders.push({ date:state.session.date, name:'現場客', items:its, total:t }); closeOrderModal(); render(); persist(); }
-        function renderOrderItemPicker() { const p=document.getElementById('order-item-picker'); p.innerHTML=''; let cat=''; (state.availableMenu?products.filter(pr=>state.availableMenu.includes(pr.name)):products).forEach((prod)=>{ if(prod.cat!==cat){ cat=prod.cat; p.innerHTML+=`<h3 class="text-[10px] font-black text-slate-300 text-center uppercase mt-4">【 ${cat} 】</h3>`; } const realIdx=products.findIndex(orig=>orig.name===prod.name); p.innerHTML+= `<div class="bg-white p-3 rounded-2xl flex items-center justify-between shadow-sm border border-gray-100 mb-2"><span>${prod.name}</span><div class="flex items-center"><button onclick="changeQty('draft',${realIdx},-1)" class="stepper-btn">-</button><div id="draft-qty-${realIdx}" class="w-8 text-center">${state.orderDraft[realIdx]||0}</div><button onclick="changeQty('draft',${realIdx},1)" class="stepper-btn">+</button></div></div>`; }); }
+        function closeOrderModal() { document.getElementById('order-modal').classList.add('hidden'); }
+        function saveNewOrder() { let its=[]; let t=0; products.forEach((p,i)=>{ if(state.orderDraft[i]>0){ its.push({name:p.name,qty:state.orderDraft[i]}); t+=p.price*state.orderDraft[i]; } }); state.orders.push({name:'現場客',total:t,items:its}); closeOrderModal(); render(); persist(); }
+        function renderOrderItemPicker() { const p=document.getElementById('order-item-picker'); p.innerHTML=''; products.forEach((prod,i)=>{ p.innerHTML+=`<div class="flex justify-between p-2"><span>${prod.name}</span><div class="flex items-center"><button onclick="changeQty('draft',${i},-1)">-</button><span id="draft-qty-${i}" class="mx-2">0</span><button onclick="changeQty('draft',${i},1)">+</button></div></div>`; }); }
+        function confirmReset() { if(confirm("清空本頁？")) { if(state.mode==='inventory')state.inventory={}; else if(state.mode==='revenue')state.revenue={cash:0,lp:0,costRaw:0}; render(); persist(); } }
 
         loadData(); switchMode('orders');
     </script>
