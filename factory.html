@@ -12,48 +12,136 @@
         .submit-btn { background: linear-gradient(135deg, #bfa07a 0%, #a68a64 100%); box-shadow: 0 10px 20px rgba(191, 160, 122, 0.3); }
         .item-active { background-color: #f0fdf4; border: 1.5px solid #22c55e; color: #166534; }
         .item-inactive { background-color: #fff; border: 1.5px solid #eee; color: #cbd5e1; }
-        select { -webkit-appearance: none; background: #f9f9f9; padding: 10px; border-radius: 15px; width: 100%; text-align: center; border: 1px solid #eee; font-weight: bold; }
-        .loading-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center; color:white; flex-direction: column; gap: 15px; }
+        select { -webkit-appearance: none; appearance: none; background: #f9f9f9; border: none; padding: 10px; border-radius: 15px; font-weight: bold; color: #333; width: 100%; text-align: center; text-align-last: center; border: 1px solid #eee; outline: none; }
+        .loading-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center; color:white; font-weight:bold; flex-direction: column; gap: 15px; }
     </style>
 </head>
 <body class="pb-36">
-    <div id="loading" class="loading-overlay"><div class="animate-spin text-4xl"><i class="fas fa-sync-alt"></i></div><span>上傳菜單中...</span></div>
+    <div id="loading" class="loading-overlay"><div class="animate-spin text-4xl"><i class="fas fa-sync-alt"></i></div><span>菜單同步至雲端中...</span></div>
 
     <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 px-6 py-5 flex justify-between items-center shadow-sm">
-        <h1 class="text-2xl font-black text-slate-800">【 工廠版 】</h1>
+        <div>
+            <div class="flex items-center gap-2">
+                <h1 class="text-2xl font-black text-slate-800 italic uppercase tracking-tighter">【 工廠版 】</h1>
+            </div>
+            <p class="text-[10px] text-slate-400 font-bold mt-1 tracking-widest uppercase">供貨品項勾選系統</p>
+        </div>
     </header>
 
     <div id="app" class="p-4">
         <div class="bg-slate-800 p-6 rounded-[30px] mb-6 shadow-xl text-white text-center">
-            <p class="text-[10px] font-black text-slate-400 mb-3 uppercase italic">選擇出貨日期</p>
+            <p class="text-[10px] font-black text-slate-400 mb-3 tracking-widest uppercase italic">請選擇「出貨日期」</p>
             <div class="grid grid-cols-2 gap-2 mb-4">
-                <select id="f-date-m" onchange="updateTargetDate()" class="bg-slate-700 text-white"></select>
-                <select id="f-date-d" onchange="updateTargetDate()" class="bg-slate-700 text-white"></select>
+                <select id="f-date-m" onchange="updateTargetDate()" class="bg-slate-700 text-white text-center"></select>
+                <select id="f-date-d" onchange="updateTargetDate()" class="bg-slate-700 text-white text-center"></select>
             </div>
             <div class="flex justify-center gap-3 mt-4 border-t border-white/10 pt-4">
-                <button onclick="selectAll(true)" class="bg-white/10 px-4 py-2 rounded-xl text-xs font-bold">全選</button>
-                <button onclick="selectAll(false)" class="bg-white/10 px-4 py-2 rounded-xl text-xs font-bold">清空</button>
+                <button onclick="selectAll(true)" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl font-bold text-xs transition-all"><i class="fas fa-check-square mr-1"></i>全選</button>
+                <button onclick="selectAll(false)" class="bg-white/10 hover:bg-white/20 text-slate-300 px-4 py-2 rounded-xl font-bold text-xs transition-all"><i class="far fa-square mr-1"></i>全不選</button>
             </div>
         </div>
+
         <div id="menu-list"></div>
     </div>
 
-    <div class="fixed bottom-6 left-0 right-0 px-6 z-40">
-        <button onclick="submitMenu()" class="submit-btn w-full py-4 rounded-2xl text-white font-bold text-lg">確認送出今日菜單</button>
+    <div id="action-bar" class="fixed bottom-6 left-0 right-0 px-6 z-40">
+        <button onclick="submitMenu()" class="submit-btn w-full py-4 rounded-2xl text-white font-bold text-lg flex items-center justify-center gap-3 active:scale-95 transition-transform">
+            <i class="fas fa-cloud-upload-alt"></i> 確認送出今日菜單
+        </button>
     </div>
 
     <script>
+        // 🚀 凱埕，這是你最新的專屬 API 網址
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyC2W-Zd4MLht6wz2d9Vg69Rk3azfha_LdX6RgfXYA_u7k6kYlus638HgNdkn6FkJMF8w/exec';
 
         const products=[{cat:"🥖 麵包區",name:"黃金牛角"},{cat:"🥖 麵包區",name:"原味小菠蘿"},{cat:"🥖 麵包區",name:"奶酥菠蘿"},{cat:"🥖 麵包區",name:"芋頭菠蘿"},{cat:"🥖 麵包區",name:"菠蘿金牛角"},{cat:"🥖 麵包區",name:"楓糖小可頌"},{cat:"🥖 麵包區",name:"鹽花可頌"},{cat:"🥖 麵包區",name:"蘋果派"},{cat:"🥖 麵包區",name:"巧克力大理石"},{cat:"🥖 麵包區",name:"可可麵包捲"},{cat:"🥖 麵包區",name:"奶香小餐包"},{cat:"🥖 麵包區",name:"黃金小羅宋"},{cat:"🥖 麵包區",name:"北海道鮮奶"},{cat:"🥖 麵包區",name:"奶酥小炸彈"},{cat:"🥖 麵包區",name:"牛奶克林姆"},{cat:"🥖 麵包區",name:"咖啡麵包"},{cat:"🥖 麵包區",name:"紅豆麵包"},{cat:"🥖 麵包區",name:"肉鬆麵包"},{cat:"🥖 麵包區",name:"台式肉鬆蔥捲"},{cat:"🥖 麵包區",name:"明太子法國麵包"},{cat:"🥖 麵包區",name:"香蒜法國麵包"},{cat:"🥖 麵包區",name:"香蒜金磚吐司"},{cat:"🥖 麵包區",name:"德腸夏威夷"},{cat:"🥖 麵包區",name:"可可爆漿菠蘿"},{cat:"🥖 麵包區",name:"巧克力QQ球"},{cat:"🥖 麵包區",name:"蔓越莓雜糧"},{cat:"🥖 麵包區",name:"優格蔓越莓"},{cat:"🥖 麵包區",name:"肉桂核桃捲"},{cat:"🥖 麵包區",name:"千層牛奶棒"},{cat:"🥖 麵包區",name:"蜂蜜起酥蛋糕"},{cat:"🥖 麵包區",name:"QQ布丁麵包"},{cat:"🥯 貝果、吐司區",name:"原味軟貝果"},{cat:"🥯 貝果、吐司區",name:"火龍果乳酪貝果"},{cat:"🥯 貝果、吐司區",name:"巧克力貝果"},{cat:"🥯 貝果、吐司區",name:"藍莓抹醬貝果"},{cat:"🥯 貝果、吐司區",name:"三色厚片吐司"},{cat:"🥯 貝果、吐司區",name:"千層小吐司"},{cat:"🍰 蛋糕點心區",name:"花瓣檸檬塔"},{cat:"🍰 蛋糕點心區",name:"台式小蛋塔"},{cat:"🍰 蛋糕點心區",name:"蛋糕捲 (巧克力)"},{cat:"🍰 蛋糕點心區",name:"蛋糕捲 (草莓)"},{cat:"🍰 蛋糕點心區",name:"蛋糕捲 (芋頭)"},{cat:"🍰 蛋糕點心區",name:"蛋糕捲 (香草)"},{cat:"🍰 蛋糕點心區",name:"檸檬小蛋糕"},{cat:"🍰 蛋糕點心區",name:"草莓小蛋糕"},{cat:"🍰 蛋糕點心區",name:"檸檬布丁塔"},{cat:"🍰 蛋糕點心區",name:"冰心泡芙 (巧克力)"},{cat:"🍰 蛋糕點心區",name:"冰心泡芙 (草莓)"},{cat:"🍰 蛋糕點心區",name:"冰心泡芙 (卡士達)"},{cat:"🍰 蛋糕點心區",name:"生乳餐包"},{cat:"🍰 蛋糕點心區",name:"卡士達冰心可頌"},{cat:"🍰 蛋糕點心區",name:"紅豆麻糬"},{cat:"🍰 蛋糕點心區",name:"台式馬卡龍 (原味)"},{cat:"🍰 蛋糕點心區",name:"台式馬卡龍 (巧克力)"},{cat:"🍰 蛋糕點心區",name:"台式馬卡龍 (草莓)"},{cat:"🍰 蛋糕點心區",name:"珍珠糖泡芙餅乾"},{cat:"🍰 蛋糕點心區",name:"法式奶油球 (巧克力)"},{cat:"🍰 蛋糕點心區",name:"法式奶油球 (草莓)"},{cat:"🍰 蛋糕點心區",name:"法式奶油球 (原味)"},{cat:"🍰 蛋糕點心區",name:"肉鬆芋頭小貝"},{cat:"🍰 蛋糕點心區",name:"帕瑪森起士棒"}];
-        let state = { targetDate: '', selectedItems: new Set(products.map(p => p.name)) };
-        function init() { const tom = new Date(); tom.setDate(tom.getDate()+1); state.targetDate = `${tom.getMonth()+1}/${tom.getDate()}`; document.getElementById('f-date-m').innerHTML = Array.from({length:12},(_,i)=>i+1).map(v=>`<option value="${v}" ${v==tom.getMonth()+1?'selected':''}>${v}月</option>`).join(''); document.getElementById('f-date-d').innerHTML = Array.from({length:31},(_,i)=>i+1).map(v=>`<option value="${v}" ${v==tom.getDate()?'selected':''}>${v}日</option>`).join(''); render(); }
-        function updateTargetDate() { state.targetDate = `${document.getElementById('f-date-m').value}/${document.getElementById('f-date-d').value}`; }
-        function toggle(name) { if (state.selectedItems.has(name)) state.selectedItems.delete(name); else state.selectedItems.add(name); render(); }
-        function selectAll(b) { if(b) state.selectedItems = new Set(products.map(p => p.name)); else state.selectedItems.clear(); render(); }
-        function render() { const box = document.getElementById('menu-list'); box.innerHTML = ''; let cat = ''; products.forEach(p => { if (p.cat !== cat) { cat = p.cat; box.innerHTML += `<h3 class="text-xs font-bold text-slate-400 mt-6 mb-2">【 ${cat} 】</h3>`; } const active = state.selectedItems.has(p.name); box.innerHTML += `<div onclick="toggle('${p.name}')" class="p-4 rounded-2xl flex justify-between items-center mb-2 shadow-sm ${active?'item-active':'item-inactive'}"><span>${p.name}</span><i class="fas ${active?'fa-check-circle':'fa-circle'}"></i></div>`; }); }
-        async function submitMenu() { document.getElementById('loading').style.display='flex'; try { await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ targetSheet: "DailyMenu", sessionDate: state.targetDate, sessionLocation: "工廠端", data: { availableItems: Array.from(state.selectedItems) } }) }); alert("✅ 菜單已成功同步雲端！"); } catch(e) { alert("❌ 失敗"); } document.getElementById('loading').style.display='none'; }
-        init();
+
+        let state = {
+            targetDate: '',
+            selectedItems: new Set(products.map(p => p.name))
+        };
+
+        function initDate() {
+            const tom = new Date(); tom.setDate(tom.getDate() + 1); // 預設跳明天
+            const m = tom.getMonth() + 1; const d = tom.getDate();
+            state.targetDate = `${m}/${d}`;
+
+            const ms = Array.from({length:12},(_,i)=>i+1), ds = Array.from({length:31},(_,i)=>i+1);
+            document.getElementById('f-date-m').innerHTML = ms.map(v=>`<option value="${v}" ${v==m?'selected':''}>${v}月</option>`).join('');
+            document.getElementById('f-date-d').innerHTML = ds.map(v=>`<option value="${v}" ${v==d?'selected':''}>${v}日</option>`).join('');
+        }
+
+        function updateTargetDate() {
+            state.targetDate = `${document.getElementById('f-date-m').value}/${document.getElementById('f-date-d').value}`;
+        }
+
+        function toggleItem(name) {
+            if (state.selectedItems.has(name)) state.selectedItems.delete(name);
+            else state.selectedItems.add(name);
+            renderMenu();
+        }
+
+        function selectAll(isSelect) {
+            if(isSelect) state.selectedItems = new Set(products.map(p => p.name));
+            else state.selectedItems.clear();
+            renderMenu();
+        }
+
+        function renderMenu() {
+            const container = document.getElementById('menu-list');
+            container.innerHTML = '';
+            let cat = '';
+            
+            products.forEach(p => {
+                if (p.cat !== cat) {
+                    cat = p.cat;
+                    container.innerHTML += `<h3 class="text-[11px] font-black text-slate-400 mb-2 mt-6 ml-2 uppercase tracking-widest border-l-4 border-slate-300 pl-2">【 ${cat.replace(/🥖 |🥯 |🍰 /g, '')} 】</h3>`;
+                }
+                
+                const isActive = state.selectedItems.has(p.name);
+                const activeClass = isActive ? 'item-active' : 'item-inactive';
+                const iconClass = isActive ? 'fa-check-circle text-green-500' : 'fa-circle text-slate-200';
+                
+                container.innerHTML += `
+                    <div onclick="toggleItem('${p.name}')" class="p-4 rounded-2xl flex justify-between items-center mb-2 shadow-sm transition-all active:scale-95 cursor-pointer ${activeClass}">
+                        <span class="font-bold ${isActive ? 'text-green-800' : 'text-slate-400'}">${p.name}</span>
+                        <i class="fas ${iconClass} text-xl transition-all"></i>
+                    </div>`;
+            });
+        }
+
+        async function submitMenu() {
+            if (!GOOGLE_SCRIPT_URL) { alert("API 尚未設定！"); return; }
+            
+            const itemsArray = Array.from(state.selectedItems);
+            if(itemsArray.length === 0) {
+                if(!confirm("目前沒選任何品項，確定這天工廠休息嗎？")) return;
+            }
+
+            document.getElementById('loading').style.display = 'flex';
+            try {
+                const payload = { 
+                    targetSheet: "DailyMenu", 
+                    sessionDate: state.targetDate, 
+                    sessionLocation: "工廠端",
+                    data: { availableItems: itemsArray }
+                };
+
+                await fetch(GOOGLE_SCRIPT_URL, { 
+                    method: 'POST', 
+                    mode: 'no-cors', 
+                    body: JSON.stringify(payload) 
+                });
+                
+                alert(`✅ 成功同步！\n日期 ${state.targetDate} 的菜單已更新至雲端。`);
+            } catch (e) { 
+                alert("發生網路錯誤，請重新送出。");
+            }
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        initDate();
+        renderMenu();
     </script>
 </body>
 </html>
