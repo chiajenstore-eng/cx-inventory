@@ -12,8 +12,6 @@
         .submit-btn { background: linear-gradient(135deg, #bfa07a 0%, #a68a64 100%); box-shadow: 0 10px 20px rgba(191, 160, 122, 0.3); }
         select { -webkit-appearance: none; appearance: none; background: #f9f9f9; border: none; padding: 10px; border-radius: 15px; font-weight: bold; color: #333; width: 100%; text-align: center; text-align-last: center; border: 1px solid #eee; outline: none; }
         .loading-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center; color:white; font-weight:bold; flex-direction: column; gap: 15px; }
-        
-        /* 勾選卡片樣式 */
         .item-active { background-color: #f0fdf4; border: 1.5px solid #22c55e; color: #166534; }
         .item-inactive { background-color: #fff; border: 1.5px solid #eee; color: #cbd5e1; }
     </style>
@@ -53,12 +51,10 @@
     </div>
 
     <script>
-        // 💡 已經綁定你的專屬 API 網址
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwp4IDM-5t2ioYi01csJEMObobpEO-kSsw4E8IOuhKS3As4SA1YfrW3t6DEOlx3vJwkSg/exec';
 
         const products=[{cat:"🥖 麵包區",name:"黃金牛角"},{cat:"🥖 麵包區",name:"原味小菠蘿"},{cat:"🥖 麵包區",name:"奶酥菠蘿"},{cat:"🥖 麵包區",name:"芋頭菠蘿"},{cat:"🥖 麵包區",name:"菠蘿金牛角"},{cat:"🥖 麵包區",name:"楓糖小可頌"},{cat:"🥖 麵包區",name:"鹽花可頌"},{cat:"🥖 麵包區",name:"蘋果派"},{cat:"🥖 麵包區",name:"巧克力大理石"},{cat:"🥖 麵包區",name:"可可麵包捲"},{cat:"🥖 麵包區",name:"奶香小餐包"},{cat:"🥖 麵包區",name:"黃金小羅宋"},{cat:"🥖 麵包區",name:"北海道鮮奶"},{cat:"🥖 麵包區",name:"奶酥小炸彈"},{cat:"🥖 麵包區",name:"牛奶克林姆"},{cat:"🥖 麵包區",name:"咖啡麵包"},{cat:"🥖 麵包區",name:"紅豆麵包"},{cat:"🥖 麵包區",name:"肉鬆麵包"},{cat:"🥖 麵包區",name:"台式肉鬆蔥捲"},{cat:"🥖 麵包區",name:"明太子法國麵包"},{cat:"🥖 麵包區",name:"香蒜法國麵包"},{cat:"🥖 麵包區",name:"香蒜金磚吐司"},{cat:"🥖 麵包區",name:"德腸夏威夷"},{cat:"🥖 麵包區",name:"可可爆漿菠蘿"},{cat:"🥖 麵包區",name:"巧克力QQ球"},{cat:"🥖 麵包區",name:"蔓越莓雜糧"},{cat:"🥖 麵包區",name:"優格蔓越莓"},{cat:"🥖 麵包區",name:"肉桂核桃捲"},{cat:"🥖 麵包區",name:"千層牛奶棒"},{cat:"🥖 麵包區",name:"蜂蜜起酥蛋糕"},{cat:"🥖 麵包區",name:"QQ布丁麵包"},{cat:"🥯 貝果、吐司區",name:"原味軟貝果"},{cat:"🥯 貝果、吐司區",name:"火龍果乳酪貝果"},{cat:"🥯 貝果、吐司區",name:"巧克力貝果"},{cat:"🥯 貝果、吐司區",name:"藍莓抹醬貝果"},{cat:"🥯 貝果、吐司區",name:"三色厚片吐司"},{cat:"🥯 貝果、吐司區",name:"千層小吐司"},{cat:"🍰 蛋糕點心區",name:"花瓣檸檬塔"},{cat:"🍰 蛋糕點心區",name:"台式小蛋塔"},{cat:"🍰 蛋糕點心區",name:"蛋糕捲 (巧克力)"},{cat:"🍰 蛋糕點心區",name:"蛋糕捲 (草莓)"},{cat:"🍰 蛋糕點心區",name:"蛋糕捲 (芋頭)"},{cat:"🍰 蛋糕點心區",name:"蛋糕捲 (香草)"},{cat:"🍰 蛋糕點心區",name:"檸檬小蛋糕"},{cat:"🍰 蛋糕點心區",name:"草莓小蛋糕"},{cat:"🍰 蛋糕點心區",name:"檸檬布丁塔"},{cat:"🍰 蛋糕點心區",name:"冰心泡芙 (巧克力)"},{cat:"🍰 蛋糕點心區",name:"冰心泡芙 (草莓)"},{cat:"🍰 蛋糕點心區",name:"冰心泡芙 (卡士達)"},{cat:"🍰 蛋糕點心區",name:"生乳餐包"},{cat:"🍰 蛋糕點心區",name:"卡士達冰心可頌"},{cat:"🍰 蛋糕點心區",name:"紅豆麻糬"},{cat:"🍰 蛋糕點心區",name:"台式馬卡龍 (原味)"},{cat:"🍰 蛋糕點心區",name:"台式馬卡龍 (巧克力)"},{cat:"🍰 蛋糕點心區",name:"台式馬卡龍 (草莓)"},{cat:"🍰 蛋糕點心區",name:"珍珠糖泡芙餅乾"},{cat:"🍰 蛋糕點心區",name:"法式奶油球 (巧克力)"},{cat:"🍰 蛋糕點心區",name:"法式奶油球 (草莓)"},{cat:"🍰 蛋糕點心區",name:"法式奶油球 (原味)"},{cat:"🍰 蛋糕點心區",name:"肉鬆芋頭小貝"},{cat:"🍰 蛋糕點心區",name:"帕瑪森起士棒"}];
 
-        // 預設將所有品項加入已選清單
         let state = {
             targetDate: '',
             selectedItems: new Set(products.map(p => p.name))
@@ -120,9 +116,7 @@
         }
 
         async function submitMenu() {
-            if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes('貼上')) {
-                alert("API 尚未設定！"); return;
-            }
+            if (!GOOGLE_SCRIPT_URL) { alert("API 尚未設定！"); return; }
             
             const itemsArray = Array.from(state.selectedItems);
             if(itemsArray.length === 0) {
@@ -131,17 +125,13 @@
 
             document.getElementById('loading').style.display = 'flex';
             try {
+                // 修復：不再呼叫不存在的 session.date，直接使用 targetDate
                 const payload = { 
                     targetSheet: "DailyMenu", 
-                    sessionDate: state.session.date, // 借用欄位傳遞日期
+                    sessionDate: state.targetDate, 
                     sessionLocation: "工廠端",
-                    data: {
-                        availableItems: itemsArray
-                    }
+                    data: { availableItems: itemsArray }
                 };
-                
-                // 特別處理：因為工廠端我們只傳目標日期
-                payload.sessionDate = state.targetDate;
 
                 await fetch(GOOGLE_SCRIPT_URL, { 
                     method: 'POST', 
@@ -152,7 +142,7 @@
                 alert(`✅ 成功！\n${state.targetDate} 的供貨菜單已更新至雲端！`);
             } catch (e) { 
                 console.error(e);
-                alert("上傳失敗，請檢查網路連線。");
+                alert("發生錯誤，請截圖給系統管理員檢查。");
             }
             document.getElementById('loading').style.display = 'none';
         }
