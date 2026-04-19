@@ -31,7 +31,7 @@
         <div class="text-right flex flex-col items-end">
             <span id="stat-value" class="text-xl font-black text-red-500">$0</span>
             <span id="stat-label" class="block text-[9px] text-slate-400 font-bold uppercase italic mb-1 tracking-widest">系統數值</span>
-            <button id="mini-reset-btn" onclick="confirmReset()" class="hidden text-[10px] bg-slate-100 text-slate-400 px-2 py-1 rounded-lg font-bold border border-slate-200 active:bg-slate-200 transition-all"><i class="fas fa-redo-alt mr-1"></i>重新統計</button>
+            <button id="mini-reset-btn" onclick="confirmReset()" class="hidden text-[10px] bg-slate-100 text-slate-400 px-2 py-1 rounded-lg font-bold border border-slate-200 active:bg-slate-200 transition-all"><i class="fas fa-eraser mr-1"></i>清空本頁</button>
         </div>
     </header>
 
@@ -47,16 +47,13 @@
     </nav>
 
     <div id="export-modal" class="hidden fixed inset-0 z-[300] bg-black/80 backdrop-blur-md flex items-center justify-center p-6"><div class="bg-white w-full max-w-sm rounded-[30px] p-6 shadow-2xl relative flex flex-col"><button onclick="document.getElementById('export-modal').classList.add('hidden')" class="absolute top-4 right-6 text-slate-300 text-3xl font-bold">&times;</button><h2 class="text-lg font-black text-slate-800 mb-4 text-center italic">📤 系統彙整報表</h2><textarea id="export-text" class="w-full h-64 bg-gray-50 p-4 rounded-2xl text-[11px] font-bold text-slate-600 outline-none border border-gray-100 mb-4 leading-relaxed" readonly></textarea><a id="line-share-btn" href="#" target="_blank" class="w-full bg-[#06C755] text-white py-4 rounded-2xl font-black text-lg flex items-center justify-center gap-2 shadow-lg"><i class="fab fa-line text-2xl"></i> 傳送至 LINE</a></div></div>
-    
     <div id="session-modal" class="hidden fixed inset-0 z-[250] bg-black/80 flex items-center justify-center p-6"><div class="bg-white w-full max-w-sm rounded-[40px] p-8 shadow-2xl relative text-center"><h2 class="text-xl font-black text-slate-800 mb-6 italic">今日結算對位</h2><div class="space-y-4"><div class="grid grid-cols-2 gap-2"><select id="s-date-m"></select><select id="s-date-d"></select></div><select id="s-loc" class="font-bold text-slate-700 text-center"><option value="嘉北街">📍 嘉北街</option><option value="吉品紅豆餅">📍 吉品紅豆餅</option><option value="溪口北極殿">📍 溪口北極殿</option><option value="中正大學">📍 中正大學</option><option value="其他">📍 其他</option></select><button onclick="confirmSession()" class="w-full bg-[#bfa07a] text-white py-4 rounded-2xl font-bold text-lg mt-4 shadow-lg">確認開班</button></div></div></div>
 
     <script>
-        // 綁定專屬雲端大腦
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwp4IDM-5t2ioYi01csJEMObobpEO-kSsw4E8IOuhKS3As4SA1YfrW3t6DEOlx3vJwkSg/exec';
 
         const products=[{cat:"🥖 麵包區",name:"黃金牛角",price:35},{cat:"🥖 麵包區",name:"原味小菠蘿",price:35},{cat:"🥖 麵包區",name:"奶酥菠蘿",price:35},{cat:"🥖 麵包區",name:"芋頭菠蘿",price:35},{cat:"🥖 麵包區",name:"菠蘿金牛角",price:35},{cat:"🥖 麵包區",name:"楓糖小可頌",price:35},{cat:"🥖 麵包區",name:"鹽花可頌",price:35},{cat:"🥖 麵包區",name:"蘋果派",price:35},{cat:"🥖 麵包區",name:"巧克力大理石",price:35},{cat:"🥖 麵包區",name:"可可麵包捲",price:35},{cat:"🥖 麵包區",name:"奶香小餐包",price:35},{cat:"🥖 麵包區",name:"黃金小羅宋",price:35},{cat:"🥖 麵包區",name:"北海道鮮奶",price:35},{cat:"🥖 麵包區",name:"奶酥小炸彈",price:35},{cat:"🥖 麵包區",name:"牛奶克林姆",price:35},{cat:"🥖 麵包區",name:"咖啡麵包",price:35},{cat:"🥖 麵包區",name:"紅豆麵包",price:35},{cat:"🥖 麵包區",name:"肉鬆麵包",price:35},{cat:"🥖 麵包區",name:"台式肉鬆蔥捲",price:35},{cat:"🥖 麵包區",name:"明太子法國麵包",price:45},{cat:"🥖 麵包區",name:"香蒜法國麵包",price:35},{cat:"🥖 麵包區",name:"香蒜金磚吐司",price:35},{cat:"🥖 麵包區",name:"德腸夏威夷",price:35},{cat:"🥖 麵包區",name:"可可爆漿菠蘿",price:45},{cat:"🥖 麵包區",name:"巧克力QQ球",price:35},{cat:"🥖 麵包區",name:"蔓越莓雜糧",price:45},{cat:"🥖 麵包區",name:"優格蔓越莓",price:55},{cat:"🥖 麵包區",name:"肉桂核桃捲",price:55},{cat:"🥖 麵包區",name:"千層牛奶棒",price:45},{cat:"🥖 麵包區",name:"蜂蜜起酥蛋糕",price:35},{cat:"🥖 麵包區",name:"QQ布丁麵包",price:55},{cat:"🥯 貝果、吐司區",name:"原味軟貝果",price:35},{cat:"🥯 貝果、吐司區",name:"火龍果乳酪貝果",price:45},{cat:"🥯 貝果、吐司區",name:"巧克力貝果",price:45},{cat:"🥯 貝果、吐司區",name:"藍莓抹醬貝果",price:45},{cat:"🥯 貝果、吐司區",name:"三色厚片吐司",price:35},{cat:"🥯 貝果、吐司區",name:"千層小吐司",price:55},{cat:"🍰 蛋糕點心區",name:"花瓣檸檬塔",price:35},{cat:"🍰 蛋糕點心區",name:"台式小蛋塔",price:35},{cat:"🍰 蛋糕點心區",name:"蛋糕捲 (巧克力)",price:50},{cat:"🍰 蛋糕點心區",name:"蛋糕捲 (草莓)",price:50},{cat:"🍰 蛋糕點心區",name:"蛋糕捲 (芋頭)",price:50},{cat:"🍰 蛋糕點心區",name:"蛋糕捲 (香草)",price:50},{cat:"🍰 蛋糕點心區",name:"檸檬小蛋糕",price:35},{cat:"🍰 蛋糕點心區",name:"草莓小蛋糕",price:35},{cat:"🍰 蛋糕點心區",name:"檸檬布丁塔",price:35},{cat:"🍰 蛋糕點心區",name:"冰心泡芙 (巧克力)",price:35},{cat:"🍰 蛋糕點心區",name:"冰心泡芙 (草莓)",price:35},{cat:"🍰 蛋糕點心區",name:"冰心泡芙 (卡士達)",price:35},{cat:"🍰 蛋糕點心區",name:"生乳餐包",price:35},{cat:"🍰 蛋糕點心區",name:"卡士達冰心可頌",price:35},{cat:"🍰 蛋糕點心區",name:"紅豆麻糬",price:35},{cat:"🍰 蛋糕點心區",name:"台式馬卡龍 (原味)",price:50},{cat:"🍰 蛋糕點心區",name:"台式馬卡龍 (巧克力)",price:50},{cat:"🍰 蛋糕點心區",name:"台式馬卡龍 (草莓)",price:50},{cat:"🍰 蛋糕點心區",name:"珍珠糖泡芙餅乾",price:50},{cat:"🍰 蛋糕點心區",name:"法式奶油球 (巧克力)",price:120},{cat:"🍰 蛋糕點心區",name:"法式奶油球 (草莓)",price:120},{cat:"🍰 蛋糕點心區",name:"法式奶油球 (原味)",price:120},{cat:"🍰 蛋糕點心區",name:"肉鬆芋頭小貝",price:120},{cat:"🍰 蛋糕點心區",name:"帕瑪森起士棒",price:120}];
 
-        // 使用 cx_staff_data 確保與老闆版資料隔離
         let state = {
             mode: 'inventory', session: { active: false, date: '', location: '', dayOfWeek: 0 },
             inventory: {}, revenue: { cash: 0, lp: 0, costRaw: 0, fuel: 0, rent: 0, elec: 0, truckRent: 0, etc: 0, other: 0, note: '' }
@@ -66,17 +63,16 @@
         function persist() { localStorage.setItem('cx_staff_data', JSON.stringify(state)); }
 
         async function syncToCloud(sheetName, dataObj) {
-            if (!GOOGLE_SCRIPT_URL) return;
             document.getElementById('loading').style.display = 'flex';
             try { await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ targetSheet: sheetName, sessionDate: state.session.date, sessionLocation: state.session.location, data: dataObj }) }); } catch (e) {}
             document.getElementById('loading').style.display = 'none';
         }
 
         function confirmReset() {
-            if(!confirm("確定要重新統計嗎？這將清除目前頁面數據並重選日期。")) return;
+            if(!confirm("確定要清空「當前頁面」的數據嗎？\n\n(這不會影響已傳送到試算表的資料)")) return;
             if(state.mode === 'inventory') state.inventory = {};
             else if(state.mode === 'revenue') state.revenue = { cash:0, lp:0, costRaw:0, fuel:0, rent:0, elec:0, truckRent:0, etc:0, other:0, note:'' };
-            state.session.active = false; document.getElementById('session-tag').classList.add('hidden'); switchMode(state.mode);
+            render(); persist();
         }
 
         function switchMode(m) {
@@ -84,7 +80,6 @@
             state.mode = m;
             ['inventory', 'revenue'].forEach(t => { if(document.getElementById('nav-'+t)) document.getElementById('nav-'+t).classList.toggle('active-tab', t===m); });
             document.getElementById('current-mode-title').innerText = {inventory:'收攤點貨結算', revenue:'營收利潤結算'}[m];
-            
             const bar = document.getElementById('action-bar'), btn = document.getElementById('action-bar-btn'), resetBtn = document.getElementById('mini-reset-btn');
             bar.classList.remove('hidden'); resetBtn.classList.remove('hidden');
             if (m === 'inventory') { btn.innerHTML = '<i class="fas fa-box-open"></i> 確認收攤並傳送'; btn.onclick = exportInventory; }
@@ -116,7 +111,7 @@
         async function exportInventory() { 
             let totalVal = 0; products.forEach((p, i) => totalVal += (state.inventory[i] || 0) * p.price);
             const dStr = ['日','一','二','三','四','五','六'][state.session.dayOfWeek];
-            let txt = `📦【 鍇埕 | 收攤庫存 】\n📅 日期：${state.session.date}(${dStr})\n📍 地點：${state.session.location}\n💰 庫存金額：${totalVal} 元\n------------------\n`; 
+            let txt = `📦【 鍇埕 | 收攤庫存 】\n📅 日期：${state.session.date}(${dStr})\n📍 地點：${state.session.location}\n💰 庫存：${totalVal}元\n------------------\n`; 
             let cloud = {}; let hasAny = false;
             products.forEach((p, i) => { if(state.inventory[i] > 0) { txt += `🔸 ${p.name}：${state.inventory[i]} 個\n`; cloud[p.name] = state.inventory[i]; hasAny = true; } }); 
             if(!hasAny) txt += "本日無庫存剩餘。\n";
@@ -130,8 +125,8 @@
             let txt = `💰【 鍇埕 | 營收報表 】\n📅 日期：${state.session.date}(${dStr})\n📍 地點：${state.session.location}\n------------------\n💵 總營收：$${state.revenue.cash + state.revenue.lp}\nLINE PAY：$${state.revenue.lp}\n📦 進貨成本：$${state.revenue.costRaw * disc}\n💸 支出明細：$${totalExp}\n`;
             if(state.revenue.note) txt += `📝 備註：${state.revenue.note}\n`;
             txt += `------------------\n✨ 今日收益：$${Math.round(net)}`;
-            await syncToCloud('Revenue', { "現金": state.revenue.cash, "LinePay": state.revenue.lp, "成本": state.revenue.costRaw * disc, "加油": state.revenue.fuel, "場地租金": state.revenue.rent, "電費清潔費": state.revenue.elec, "餐車租金": state.revenue.truckRent, "ETC": state.revenue.etc, "雜項": state.revenue.other, "純利": Math.round(net), "備註": state.revenue.note }); 
-            showExportModal(txt); 
+            const cloudData = { "現金": state.revenue.cash, "LinePay": state.revenue.lp, "成本": state.revenue.costRaw * disc, "加油": state.revenue.fuel, "場地租金": state.revenue.rent, "電費清潔費": state.revenue.elec, "餐車租金": state.revenue.truckRent, "ETC": state.revenue.etc, "雜項": state.revenue.other, "純利": Math.round(net), "備註": state.revenue.note };
+            await syncToCloud('Revenue', cloudData); showExportModal(txt); 
         }
 
         function updateStat() {
@@ -141,7 +136,6 @@
                 const disc = state.revenue.costRaw >= 12000 ? 0.5 : 0.55; const totalExp = state.revenue.fuel + state.revenue.rent + state.revenue.elec + state.revenue.truckRent + state.revenue.etc + state.revenue.other;
                 const net = (state.revenue.cash + state.revenue.lp) - (state.revenue.costRaw * disc) - totalExp; 
                 val.innerText = '$' + Math.round(net).toLocaleString(); lab.innerText = '今日收益'; 
-                if(document.getElementById('discount-tag')) document.getElementById('discount-tag').innerText = `適用 ${disc*10} 折`;
             }
         }
 
@@ -152,7 +146,6 @@
         }
 
         function changeQty(i, d) { state.inventory[i] = Math.max(0, (state.inventory[i] || 0) + d); render(); persist(); }
-
         function openSessionModal() { document.getElementById('session-modal').classList.remove('hidden'); const now = new Date(); document.getElementById('s-date-m').innerHTML = Array.from({length:12},(_,i)=>i+1).map(m=>`<option value="${m}" ${now.getMonth()+1===m?'selected':''}>${m}月</option>`).join(''); document.getElementById('s-date-d').innerHTML = Array.from({length:31},(_,i)=>i+1).map(d=>`<option value="${d}" ${now.getDate()===d?'selected':''}>${d}日</option>`).join(''); }
         function confirmSession() { const m = document.getElementById('s-date-m').value, d = document.getElementById('s-date-d').value; state.session.dayOfWeek = new Date(new Date().getFullYear(), m-1, d).getDay(); state.session.active = true; state.session.date = `${m}/${d}`; state.session.location = document.getElementById('s-loc').value; document.getElementById('session-modal').classList.add('hidden'); document.getElementById('session-tag').classList.remove('hidden'); switchMode(state.tempMode || 'inventory'); }
 
